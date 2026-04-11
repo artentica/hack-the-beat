@@ -1,11 +1,104 @@
 <template>
   <div class="app-root">
-    <h1>Hack the Beat 🎮</h1>
-    <p class="subtitle">Jeu de rythme visuel — Vue 3 + Vite</p>
+    <!-- Retour accueil (hors start screen) -->
+    <div v-if="screen !== 'start'" class="home-icon" @click="goHome">🏠</div>
+
+    <div class="main-layout">
+      <div class="right-panel">
+        <!-- Écran d'accueil inline (StartScreen à venir) -->
+        <div v-if="screen === 'start'" class="placeholder-start">
+          <h1>Hack the Beat 🎮</h1>
+          <p>Jeu de rythme visuel</p>
+          <button class="button accent" @click="startGame">Jouer</button>
+        </div>
+
+        <GameScreen
+          v-else-if="screen === 'game'"
+          :state="engine.state.value"
+          :countdownValue="engine.countdownValue.value"
+          :score="engine.score.value"
+          :combo="engine.combo.value"
+          :comboMultiplier="engine.comboMultiplier.value"
+          :level="engine.level.value"
+          :totalBeats="engine.totalBeats.value"
+          :beatsRemaining="engine.beatsRemaining.value"
+          :activeBeatsTotal="engine.activeBeatsTotal.value"
+          :activeBeatsPlayed="engine.activeBeatsPlayed.value"
+          :lastFeedback="engine.lastFeedback.value"
+          :sequence="engine.sequence.value"
+          :currentBeatIndex="engine.currentBeatIndex.value"
+          :gridTiles="engine.gridTiles.value"
+          :activeTileIndex="engine.activeTileIndex.value"
+          :upcomingBeats="engine.upcomingBeats.value"
+          :isDecoyBeat="engine.isDecoyBeat.value"
+          :inputResult="engine.inputResult.value"
+          :beatProgress="engine.beatProgress.value"
+          :beatDurationMs="engine.beatDurationMs.value"
+          :cesarShift="engine.cesarShift.value"
+          :glitchEffects="engine.glitchEffects.value"
+          :perfectCount="engine.perfectCount.value"
+          :goodCount="engine.goodCount.value"
+          :okCount="engine.okCount.value"
+          :missCount="engine.missCount.value"
+          @nextLevel="engine.nextLevel()"
+          @endGame="endGame"
+        />
+
+        <!-- Écran game over inline (GameOverScreen à venir) -->
+        <div v-else-if="screen === 'gameover'" class="placeholder-gameover">
+          <h2>Game Over !</h2>
+          <p>Score : <strong>{{ finalScore }}</strong></p>
+          <p>Niveau atteint : {{ finalLevel }}</p>
+          <button class="button accent" @click="startGame">Rejouer</button>
+          <button class="button" @click="goHome">Accueil</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+import { onMounted, onUnmounted, ref, watch } from 'vue'
+import GameScreen from './components/GameScreen.vue'
+import { STATES, useGameEngine } from './composables/useGameEngine.js'
+
+const screen = ref('start')
+const engine = useGameEngine()
+const finalScore = ref(0)
+const finalLevel = ref(1)
+
+function startGame() {
+  screen.value = 'game'
+  engine.startGame()
+}
+
+function endGame() {
+  finalScore.value = engine.score.value
+  finalLevel.value = engine.level.value
+  engine.gameOver()
+  screen.value = 'gameover'
+}
+
+function goHome() {
+  engine.resetToIdle()
+  screen.value = 'start'
+}
+
+watch(() => engine.state.value, (newState) => {
+  if (newState === STATES.GAME_OVER && screen.value === 'game') endGame()
+})
+
+function onKeyDown(e) {
+  if (screen.value !== 'game') return
+  if (engine.state.value !== STATES.PLAYING) return
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+  e.preventDefault()
+  engine.handleKeyPress(e.key)
+}
+
+onMounted(() => { document.addEventListener('keydown', onKeyDown) })
+onUnmounted(() => { document.removeEventListener('keydown', onKeyDown) })
+</script>
 
 <style lang="scss">
 :root {
@@ -67,23 +160,80 @@ body {
 
 <style lang="scss" scoped>
 .app-root {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+
+:deep(.button) {
+  font-family: inherit;
+  font-weight: 600;
+  background-color: var(--surface-color);
+  color: var(--main-font-color);
+  border: 1px solid var(--surface-border);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 0.95em;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.15s, border-color 0.2s;
+  margin: 5px;
+
+  &:hover:not(:disabled) {
+    background-color: var(--surface-hover);
+    border-color: var(--accent-color);
+    transform: translateY(-1px);
+  }
+
+  &.accent {
+    background-color: var(--accent-color);
+    color: var(--brand-dark);
+    font-weight: 700;
+    border-color: transparent;
+    &:hover:not(:disabled) { background-color: var(--accent-hover); }
+  }
+}
+
+.main-layout {
+  display: flex;
+  width: 100%;
+  flex-grow: 1;
+}
+
+.right-panel {
+  width: 100%;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.placeholder-start,
+.placeholder-gameover {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 80vh;
+  gap: 20px;
   text-align: center;
-  gap: 1em;
 
-  h1 {
-    font-size: 3em;
-    font-weight: 700;
-    color: var(--accent-color);
-  }
+  h1, h2 { font-size: 2.5em; font-weight: 700; }
+  p { color: var(--secondary-font-color); font-size: 1.1em; }
+}
 
-  .subtitle {
-    color: var(--secondary-font-color);
-    font-size: 1.1em;
-  }
+.home-icon {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+  cursor: pointer;
+  font-size: 24px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--surface-color);
+  border: 1px solid var(--surface-border);
+  user-select: none;
+  &:hover { background: var(--surface-hover); border-color: var(--accent-color); }
 }
 </style>

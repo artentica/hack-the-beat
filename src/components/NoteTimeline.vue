@@ -1,0 +1,250 @@
+<template>
+  <div class="note-timeline">
+    <!-- Hit line — simple vertical marker -->
+    <div class="hit-line"></div>
+
+    <div class="timeline-track" :style="trackStyle">
+      <div
+        v-for="note in visibleNotes"
+        :key="currentBeatIndex + '-' + note.seqIndex"
+        class="timeline-note"
+        :class="{
+          'note-current': note.seqIndex === currentBeatIndex,
+          'note-decoy': note.isDecoy,
+          'note-hit':
+            note.seqIndex === currentBeatIndex &&
+            hitResult &&
+            hitResult !== 'MISS' &&
+            hitResult !== 'TRAP',
+          'note-miss':
+            note.seqIndex === currentBeatIndex &&
+            (hitResult === 'MISS' || hitResult === 'TRAP'),
+        }"
+        :style="noteStyle(note)"
+      >
+        <img
+          v-if="note.svg"
+          :src="note.svg"
+          :alt="note.letter"
+          class="note-icon"
+        />
+        <span class="note-letter">{{ note.letter }}</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { computed, onMounted, onUnmounted, ref } from "vue";
+
+const props = defineProps({
+  sequence: { type: Array, default: () => [] },
+  currentBeatIndex: { type: Number, default: 0 },
+  beatDurationMs: { type: Number, default: 750 },
+  gridTiles: { type: Array, default: () => [] },
+  hitResult: { type: String, default: null },
+  isCountdown: { type: Boolean, default: false },
+  countdownValue: { type: Number, default: 0 },
+});
+
+// Track container width for pixel-based transforms
+const trackWidth = ref(640);
+let resizeObserver = null;
+const timelineRef = ref(null);
+
+// Hit line position (% from left)
+const HIT_LINE_POS = 10;
+// Spacing between each beat (% of timeline width)
+const BEAT_SPACING = 10;
+// How many beats ahead to show
+const VISIBLE_AHEAD = 9;
+
+// Pre-computed beat pixel width (reactive to container resize)
+const beatPx = computed(() => (BEAT_SPACING / 100) * trackWidth.value);
+
+// Slide the whole track in from the right during countdown
+const trackStyle = computed(() => {
+  if (!props.isCountdown) return {};
+  const extraPx = (props.countdownValue / 3) * beatPx.value * 5;
+  return {
+    transform: `translateX(${extraPx}px)`,
+    transition: "transform 800ms linear",
+  };
+});
+
+const visibleNotes = computed(() => {
+  const notes = [];
+  // Show 1 beat behind (just passed) and VISIBLE_AHEAD beats ahead
+  const startIdx = Math.max(0, props.currentBeatIndex - 1);
+  const endIdx = Math.min(
+    props.currentBeatIndex + VISIBLE_AHEAD + 1,
+    props.sequence.length,
+  );
+
+  for (let i = startIdx; i < endIdx; i++) {
+    const beat = props.sequence[i];
+    // Skip rest beats — don't show them on timeline
+    if (beat.isRest) continue;
+
+    const tile = beat.tileIndex >= 0 ? props.gridTiles[beat.tileIndex] : null;
+
+    // Position at start of beat (beatProgress = 0)
+    // CSS animation will handle smooth scrolling to the left
+    const beatOffset = i - props.currentBeatIndex;
+    const posPercent = HIT_LINE_POS + (beatOffset + 0.5) * BEAT_SPACING;
+
+    // Wider range to include notes that will scroll into view during animation
+    if (posPercent < -15 || posPercent > 115) continue;
+
+    notes.push({
+      seqIndex: i,
+      posPercent,
+      tileIndex: beat.tileIndex,
+      isDecoy: beat.isDecoy || false,
+      svg: tile ? tile.svg : null,
+      letter: tile ? tile.letter : "",
+    });
+  }
+
+  return notes;
+});
+
+/** Compute CSS variables for GPU-animated scrolling.
+ *  --start-x:  pixel position at start of beat
+ *  --beat-px:  pixel distance to travel in one beat
+ *  --beat-dur: beat duration for the CSS animation */
+function noteStyle(note) {
+  const startX = (note.posPercent / 100) * trackWidth.value - 28;
+  return {
+    "--start-x": startX + "px",
+    "--beat-px": beatPx.value + "px",
+    "--beat-dur": props.beatDurationMs + "ms",
+  };
+}
+
+onMounted(() => {
+  const el = document.querySelector(".note-timeline");
+  if (el) {
+    trackWidth.value = el.offsetWidth;
+    resizeObserver = new ResizeObserver((entries) => {
+      trackWidth.value = entries[0].contentRect.width;
+    });
+    resizeObserver.observe(el);
+  }
+});
+
+onUnmounted(() => {
+  resizeObserver?.disconnect();
+});
+</script>
+
+<style lang="scss" scoped>
+.note-timeline {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 16px;
+  position: relative;
+  height: 96px;
+  background: var(--surface-color, rgba(0, 0, 0, 0.05));
+  border: 1px solid var(--surface-border, rgba(0, 0, 0, 0.1));
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+// Hit line — simple vertical marker
+.hit-line {
+  position: absolute;
+  left: 10%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent-color, #f5ed63);
+  z-index: 5;
+}
+
+.timeline-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.timeline-note {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate3d(var(--start-x, 0), -50%, 0);
+  animation: note-scroll var(--beat-dur, 750ms) linear forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: var(--surface-color, rgba(0, 0, 0, 0.05));
+  border: 2px solid var(--surface-border, rgba(0, 0, 0, 0.1));
+  z-index: 2;
+  will-change: transform;
+  backface-visibility: hidden;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+
+  &.note-current {
+    border-color: var(--accent-color, #f5ed63);
+    box-shadow: 0 0 12px var(--accent-glow, rgba(245, 237, 99, 0.5));
+    z-index: 4;
+    animation:
+      note-scroll var(--beat-dur, 750ms) linear forwards,
+      note-current-in 120ms ease-out forwards;
+  }
+
+  &.note-decoy {
+    border-color: var(--danger-color, #ff4444);
+    background: rgba(255, 68, 68, 0.1);
+  }
+
+  &.note-hit {
+    border-color: var(--success-color, #4caf50);
+    box-shadow: 0 0 14px rgba(76, 175, 80, 0.6);
+  }
+
+  &.note-miss {
+    border-color: var(--danger-color, #f44336);
+    box-shadow: 0 0 14px rgba(244, 67, 54, 0.6);
+  }
+}
+
+@keyframes note-scroll {
+  from {
+    transform: translate3d(var(--start-x), -50%, 0);
+  }
+  to {
+    transform: translate3d(calc(var(--start-x) - var(--beat-px)), -50%, 0);
+  }
+}
+
+@keyframes note-current-in {
+  from {
+    scale: 1;
+  }
+  to {
+    scale: 1.15;
+  }
+}
+
+.note-icon {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.note-letter {
+  font-size: 0.6em;
+  font-weight: 700;
+  color: var(--main-font-color);
+  opacity: 0.8;
+  line-height: 1;
+}
+</style>
