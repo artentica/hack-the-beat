@@ -1,16 +1,14 @@
 <template>
   <div class="app-root">
     <!-- Retour accueil (hors start screen) -->
-    <div v-if="screen !== 'start'" class="home-icon" @click="goHome">🏠</div>
+    <div v-if="screen !== 'start'" class="home-icon" @click="confirmHome">🏠</div>
 
     <div class="main-layout">
       <div class="right-panel">
-        <!-- Écran d'accueil inline (StartScreen à venir) -->
-        <div v-if="screen === 'start'" class="placeholder-start">
-          <h1>Hack the Beat 🎮</h1>
-          <p>Jeu de rythme visuel</p>
-          <button class="button accent" @click="startGame">Jouer</button>
-        </div>
+        <StartScreen
+          v-if="screen === 'start'"
+          @start="startGame"
+        />
 
         <GameScreen
           v-else-if="screen === 'game'"
@@ -44,28 +42,36 @@
           @endGame="endGame"
         />
 
-        <!-- Écran game over inline (GameOverScreen à venir) -->
-        <div v-else-if="screen === 'gameover'" class="placeholder-gameover">
-          <h2>Game Over !</h2>
-          <p>Score : <strong>{{ finalScore }}</strong></p>
-          <p>Niveau atteint : {{ finalLevel }}</p>
-          <button class="button accent" @click="startGame">Rejouer</button>
-          <button class="button" @click="goHome">Accueil</button>
-        </div>
+        <GameOverScreen
+          v-else-if="screen === 'gameover'"
+          ref="gameOverRef"
+          :score="finalScore"
+          :level="finalLevel"
+          :maxCombo="finalMaxCombo"
+          :perfectCount="finalPerfect"
+          @save="saveScore"
+          @replay="startGame"
+          @home="goHome"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import GameOverScreen from './components/GameOverScreen.vue'
 import GameScreen from './components/GameScreen.vue'
+import StartScreen from './components/StartScreen.vue'
 import { STATES, useGameEngine } from './composables/useGameEngine.js'
 
 const screen = ref('start')
+const gameOverRef = ref(null)
 const engine = useGameEngine()
 const finalScore = ref(0)
 const finalLevel = ref(1)
+const finalMaxCombo = ref(0)
+const finalPerfect = ref(0)
 
 function startGame() {
   screen.value = 'game'
@@ -75,13 +81,27 @@ function startGame() {
 function endGame() {
   finalScore.value = engine.score.value
   finalLevel.value = engine.level.value
+  finalMaxCombo.value = engine.maxCombo.value
+  finalPerfect.value = engine.perfectCount.value
   engine.gameOver()
   screen.value = 'gameover'
+}
+
+function saveScore(playerData) {
+  // leaderboard à venir
+  console.log('Score enregistré :', playerData)
 }
 
 function goHome() {
   engine.resetToIdle()
   screen.value = 'start'
+}
+
+function confirmHome() {
+  if (screen.value === 'game' && engine.state.value === STATES.PLAYING) {
+    if (!window.confirm('Abandonner la partie ?')) return
+  }
+  goHome()
 }
 
 watch(() => engine.state.value, (newState) => {
@@ -123,7 +143,8 @@ onUnmounted(() => { document.removeEventListener('keydown', onKeyDown) })
   --tile-bg: rgba(255, 255, 255, 0.04);
   --tile-border: rgba(255, 255, 255, 0.08);
 
-  --font-family: "Inter", "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+  --font-family:
+    "Inter", "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
 }
 
@@ -175,7 +196,10 @@ body {
   border-radius: 12px;
   font-size: 0.95em;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.15s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    transform 0.15s,
+    border-color 0.2s;
   margin: 5px;
 
   &:hover:not(:disabled) {
@@ -189,7 +213,9 @@ body {
     color: var(--brand-dark);
     font-weight: 700;
     border-color: transparent;
-    &:hover:not(:disabled) { background-color: var(--accent-hover); }
+    &:hover:not(:disabled) {
+      background-color: var(--accent-hover);
+    }
   }
 }
 
@@ -218,8 +244,15 @@ body {
   gap: 20px;
   text-align: center;
 
-  h1, h2 { font-size: 2.5em; font-weight: 700; }
-  p { color: var(--secondary-font-color); font-size: 1.1em; }
+  h1,
+  h2 {
+    font-size: 2.5em;
+    font-weight: 700;
+  }
+  p {
+    color: var(--secondary-font-color);
+    font-size: 1.1em;
+  }
 }
 
 .home-icon {
@@ -234,6 +267,9 @@ body {
   background: var(--surface-color);
   border: 1px solid var(--surface-border);
   user-select: none;
-  &:hover { background: var(--surface-hover); border-color: var(--accent-color); }
+  &:hover {
+    background: var(--surface-hover);
+    border-color: var(--accent-color);
+  }
 }
 </style>
