@@ -1,14 +1,29 @@
 <template>
   <div class="app-root">
+    <!-- Settings menu -->
+    <div class="settings-container">
+      <span class="settings-icon" @click="showSettings = !showSettings">⚙️</span>
+      <div v-if="showSettings" class="settings-menu">
+        <button @click="exportScores">📥 Exporter JSON</button>
+        <button @click="triggerImport">📤 Importer JSON</button>
+      </div>
+      <input
+        type="file"
+        ref="fileInput"
+        @change="importScores"
+        accept=".json"
+        style="display: none"
+      />
+    </div>
+
     <!-- Retour accueil (hors start screen) -->
-    <div v-if="screen !== 'start'" class="home-icon" @click="confirmHome">🏠</div>
+    <div v-if="screen !== 'start'" class="home-icon" @click="confirmHome">
+      🏠
+    </div>
 
     <div class="main-layout">
       <div class="right-panel">
-        <StartScreen
-          v-if="screen === 'start'"
-          @start="startGame"
-        />
+        <StartScreen v-if="screen === 'start'" @start="startGame" />
 
         <GameScreen
           v-else-if="screen === 'game'"
@@ -53,71 +68,118 @@
           @replay="startGame"
           @home="goHome"
         />
+
+        <LeaderboardScreen
+          v-else-if="screen === 'leaderboard'"
+          :scores="leaderboard.sorted.value"
+          @home="goHome"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
-import GameOverScreen from './components/GameOverScreen.vue'
-import GameScreen from './components/GameScreen.vue'
-import StartScreen from './components/StartScreen.vue'
-import { STATES, useGameEngine } from './composables/useGameEngine.js'
+import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import GameOverScreen from "./components/GameOverScreen.vue";
+import GameScreen from "./components/GameScreen.vue";
+import LeaderboardScreen from "./components/LeaderboardScreen.vue";
+import StartScreen from "./components/StartScreen.vue";
+import { STATES, useGameEngine } from "./composables/useGameEngine.js";
+import { useLeaderboard } from "./composables/useLeaderboard.js";
 
-const screen = ref('start')
-const gameOverRef = ref(null)
-const engine = useGameEngine()
-const finalScore = ref(0)
-const finalLevel = ref(1)
-const finalMaxCombo = ref(0)
-const finalPerfect = ref(0)
+const screen = ref("start");
+const gameOverRef = ref(null);
+const engine = useGameEngine();
+const leaderboard = useLeaderboard();
+const showSettings = ref(false);
+const fileInput = ref(null);
+const finalScore = ref(0);
+const finalLevel = ref(1);
+const finalMaxCombo = ref(0);
+const finalPerfect = ref(0);
 
 function startGame() {
-  screen.value = 'game'
-  engine.startGame()
+  screen.value = "game";
+  engine.startGame();
 }
 
 function endGame() {
-  finalScore.value = engine.score.value
-  finalLevel.value = engine.level.value
-  finalMaxCombo.value = engine.maxCombo.value
-  finalPerfect.value = engine.perfectCount.value
-  engine.gameOver()
-  screen.value = 'gameover'
+  finalScore.value = engine.score.value;
+  finalLevel.value = engine.level.value;
+  finalMaxCombo.value = engine.maxCombo.value;
+  finalPerfect.value = engine.perfectCount.value;
+  engine.gameOver();
+  screen.value = "gameover";
 }
 
 function saveScore(playerData) {
-  // leaderboard à venir
-  console.log('Score enregistré :', playerData)
+  const entry = {
+    ...playerData,
+    score: finalScore.value,
+    date: new Date().toISOString(),
+  };
+  const rank = leaderboard.addEntry(entry);
+  nextTick(() => {
+    gameOverRef.value?.setSaved(rank);
+  });
+}
+
+function exportScores() {
+  showSettings.value = false;
+  leaderboard.exportJSON();
+}
+
+function triggerImport() {
+  showSettings.value = false;
+  fileInput.value?.click();
+}
+
+async function importScores(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  try {
+    await leaderboard.importJSON(file);
+    alert("Import réussi !");
+  } catch (err) {
+    alert(err.message);
+  }
+  e.target.value = null;
 }
 
 function goHome() {
-  engine.resetToIdle()
-  screen.value = 'start'
+  engine.resetToIdle();
+  screen.value = "start";
 }
 
 function confirmHome() {
-  if (screen.value === 'game' && engine.state.value === STATES.PLAYING) {
-    if (!window.confirm('Abandonner la partie ?')) return
+  if (screen.value === "game" && engine.state.value === STATES.PLAYING) {
+    if (!window.confirm("Abandonner la partie ?")) return;
   }
-  goHome()
+  goHome();
 }
 
-watch(() => engine.state.value, (newState) => {
-  if (newState === STATES.GAME_OVER && screen.value === 'game') endGame()
-})
+watch(
+  () => engine.state.value,
+  (newState) => {
+    if (newState === STATES.GAME_OVER && screen.value === "game") endGame();
+  },
+);
 
 function onKeyDown(e) {
-  if (screen.value !== 'game') return
-  if (engine.state.value !== STATES.PLAYING) return
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
-  e.preventDefault()
-  engine.handleKeyPress(e.key)
+  if (screen.value !== "game") return;
+  if (engine.state.value !== STATES.PLAYING) return;
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  e.preventDefault();
+  engine.handleKeyPress(e.key);
 }
 
-onMounted(() => { document.addEventListener('keydown', onKeyDown) })
-onUnmounted(() => { document.removeEventListener('keydown', onKeyDown) })
+onMounted(() => {
+  document.addEventListener("keydown", onKeyDown);
+});
+onUnmounted(() => {
+  document.removeEventListener("keydown", onKeyDown);
+});
 </script>
 
 <style lang="scss">
@@ -270,6 +332,60 @@ body {
   &:hover {
     background: var(--surface-hover);
     border-color: var(--accent-color);
+  }
+}
+
+.settings-container {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 1001;
+  user-select: none;
+}
+
+.settings-icon {
+  font-size: 22px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--surface-color);
+  border: 1px solid var(--surface-border);
+  display: inline-block;
+  &:hover {
+    background: var(--surface-hover);
+    border-color: var(--accent-color);
+  }
+}
+
+.settings-menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  background: var(--app-background-color);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+
+  button {
+    font-family: inherit;
+    font-size: 0.85em;
+    font-weight: 500;
+    background: var(--surface-color);
+    color: var(--main-font-color);
+    border: 1px solid var(--surface-border);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    &:hover {
+      background: var(--surface-hover);
+      border-color: var(--accent-color);
+    }
   }
 }
 </style>
