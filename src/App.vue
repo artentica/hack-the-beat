@@ -21,6 +21,11 @@
       🏠
     </div>
 
+    <GlitchOverlay
+      :screenShake="engine.glitchEffects.value?.screenShake"
+      :colorInvert="engine.glitchEffects.value?.colorInvert"
+    />
+
     <div class="main-layout">
       <div class="right-panel">
         <StartScreen v-if="screen === 'start'" @start="startGame" />
@@ -83,6 +88,7 @@
 import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import GameOverScreen from "./components/GameOverScreen.vue";
 import GameScreen from "./components/GameScreen.vue";
+import GlitchOverlay from "./components/GlitchOverlay.vue";
 import LeaderboardScreen from "./components/LeaderboardScreen.vue";
 import StartScreen from "./components/StartScreen.vue";
 import { STATES, useGameEngine } from "./composables/useGameEngine.js";
