@@ -4,8 +4,15 @@
     <div class="settings-container">
       <span class="settings-icon" @click="showSettings = !showSettings">⚙️</span>
       <div v-if="showSettings" class="settings-menu">
-        <button @click="exportScores">📥 Exporter JSON</button>
-        <button @click="triggerImport">📤 Importer JSON</button>
+        <div class="settings-lang">
+          <span>🌐</span>
+          <select :value="locale" @change="setLocale($event.target.value)" class="lang-select">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <button @click="exportScores">{{ t('exportJson') }}</button>
+        <button @click="triggerImport">{{ t('importJson') }}</button>
       </div>
       <input
         type="file"
@@ -93,11 +100,13 @@ import LeaderboardScreen from "./components/LeaderboardScreen.vue";
 import StartScreen from "./components/StartScreen.vue";
 import { STATES, useGameEngine } from "./composables/useGameEngine.js";
 import { useLeaderboard } from "./composables/useLeaderboard.js";
+import { useI18n } from "./i18n/index.js";
 
 const screen = ref("start");
 const gameOverRef = ref(null);
 const engine = useGameEngine();
 const leaderboard = useLeaderboard();
+const { t, locale, setLocale } = useI18n();
 const showSettings = ref(false);
 const fileInput = ref(null);
 const finalScore = ref(0);
@@ -146,7 +155,7 @@ async function importScores(e) {
   if (!file) return;
   try {
     await leaderboard.importJSON(file);
-    alert("Import réussi !");
+    alert(t('importSuccess'));
   } catch (err) {
     alert(err.message);
   }
@@ -160,7 +169,7 @@ function goHome() {
 
 function confirmHome() {
   if (screen.value === "game" && engine.state.value === STATES.PLAYING) {
-    if (!window.confirm("Abandonner la partie ?")) return;
+    if (!window.confirm(t('quitConfirm'))) return;
   }
   goHome();
 }
@@ -392,6 +401,30 @@ body {
       background: var(--surface-hover);
       border-color: var(--accent-color);
     }
+  }
+}
+
+.settings-lang {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 8px;
+  border-bottom: 1px solid var(--surface-border);
+  margin-bottom: 4px;
+}
+
+.lang-select {
+  font-family: inherit;
+  font-size: 0.85em;
+  background: var(--surface-color);
+  color: var(--main-font-color);
+  border: 1px solid var(--surface-border);
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  &:hover {
+    border-color: var(--accent-color);
   }
 }
 </style>
