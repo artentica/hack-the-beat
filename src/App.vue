@@ -2,17 +2,23 @@
   <div class="app-root">
     <!-- Settings menu -->
     <div class="settings-container">
-      <span class="settings-icon" @click="showSettings = !showSettings">⚙️</span>
+      <span class="settings-icon" @click="showSettings = !showSettings"
+        >⚙️</span
+      >
       <div v-if="showSettings" class="settings-menu">
         <div class="settings-lang">
           <span>🌐</span>
-          <select :value="locale" @change="setLocale($event.target.value)" class="lang-select">
+          <select
+            :value="locale"
+            @change="setLocale($event.target.value)"
+            class="lang-select"
+          >
             <option value="fr">Français</option>
             <option value="en">English</option>
           </select>
         </div>
-        <button @click="exportScores">{{ t('exportJson') }}</button>
-        <button @click="triggerImport">{{ t('importJson') }}</button>
+        <button @click="exportScores">{{ t("exportJson") }}</button>
+        <button @click="triggerImport">{{ t("importJson") }}</button>
       </div>
       <input
         type="file"
@@ -28,14 +34,15 @@
       🏠
     </div>
 
-    <GlitchOverlay
-      :screenShake="engine.glitchEffects.value?.screenShake"
-      :colorInvert="engine.glitchEffects.value?.colorInvert"
-    />
-
     <div class="main-layout">
+      <LeftPanel :activeRule="activeRule" :podium="leaderboard.podium.value" />
+
       <div class="right-panel">
-        <StartScreen v-if="screen === 'start'" @start="startGame" />
+        <StartScreen
+          v-if="screen === 'start'"
+          @start="startGame"
+          @viewScores="goLeaderboard"
+        />
 
         <GameScreen
           v-else-if="screen === 'game'"
@@ -65,6 +72,7 @@
           :goodCount="engine.goodCount.value"
           :okCount="engine.okCount.value"
           :missCount="engine.missCount.value"
+          :rockMeter="engine.rockMeter.value"
           @nextLevel="engine.nextLevel()"
           @endGame="endGame"
         />
@@ -77,26 +85,32 @@
           :maxCombo="finalMaxCombo"
           :perfectCount="finalPerfect"
           @save="saveScore"
+          @viewScores="goLeaderboard"
           @replay="startGame"
           @home="goHome"
+          @showPrivacy="showPrivacy = true"
         />
 
         <LeaderboardScreen
           v-else-if="screen === 'leaderboard'"
           :scores="leaderboard.sorted.value"
           @home="goHome"
+          @showPrivacy="showPrivacy = true"
         />
       </div>
     </div>
+
+    <PrivacyModal v-if="showPrivacy" @close="showPrivacy = false" />
   </div>
 </template>
 
 <script setup>
-import { nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import GameOverScreen from "./components/GameOverScreen.vue";
 import GameScreen from "./components/GameScreen.vue";
-import GlitchOverlay from "./components/GlitchOverlay.vue";
 import LeaderboardScreen from "./components/LeaderboardScreen.vue";
+import LeftPanel from "./components/LeftPanel.vue";
+import PrivacyModal from "./components/PrivacyModal.vue";
 import StartScreen from "./components/StartScreen.vue";
 import { STATES, useGameEngine } from "./composables/useGameEngine.js";
 import { useLeaderboard } from "./composables/useLeaderboard.js";
@@ -108,6 +122,7 @@ const engine = useGameEngine();
 const leaderboard = useLeaderboard();
 const { t, locale, setLocale } = useI18n();
 const showSettings = ref(false);
+const showPrivacy = ref(false);
 const fileInput = ref(null);
 const finalScore = ref(0);
 const finalLevel = ref(1);
@@ -155,7 +170,7 @@ async function importScores(e) {
   if (!file) return;
   try {
     await leaderboard.importJSON(file);
-    alert(t('importSuccess'));
+    alert(t("importSuccess"));
   } catch (err) {
     alert(err.message);
   }
@@ -167,9 +182,25 @@ function goHome() {
   screen.value = "start";
 }
 
+function goLeaderboard() {
+  screen.value = "leaderboard";
+}
+
+/** Règle active (1-based) selon l'état du jeu */
+const activeRule = computed(() => {
+  if (screen.value !== "game") return 0;
+  const lvl = engine.level.value;
+  const params = engine.levelParams?.value;
+  if (params?.hasCesar) return 5;
+  if (params?.hasDecoys) return 4;
+  if (lvl >= 5) return 3;
+  if (lvl >= 3) return 2;
+  return 1;
+});
+
 function confirmHome() {
   if (screen.value === "game" && engine.state.value === STATES.PLAYING) {
-    if (!window.confirm(t('quitConfirm'))) return;
+    if (!window.confirm(t("quitConfirm"))) return;
   }
   goHome();
 }
@@ -198,32 +229,7 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-:root {
-  --accent-color: #f5ed63;
-  --accent-hover: #e8e05a;
-  --accent-glow: rgba(245, 237, 99, 0.5);
-  --brand-dark: #1c1c1c;
-
-  --main-font-color: #e8e8e8;
-  --secondary-font-color: #9e9e9e;
-  --page-background-color: #0d0d0d;
-  --app-background-color: #141418;
-  --surface-color: rgba(255, 255, 255, 0.06);
-  --surface-hover: rgba(255, 255, 255, 0.1);
-  --surface-border: rgba(255, 255, 255, 0.08);
-  --menu-border-color: rgba(255, 255, 255, 0.1);
-
-  --success-color: #4caf50;
-  --danger-color: #f44336;
-  --warning-color: #ff6b35;
-
-  --tile-bg: rgba(255, 255, 255, 0.04);
-  --tile-border: rgba(255, 255, 255, 0.08);
-
-  --font-family:
-    "Inter", "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
-}
+/* Les variables CSS sont définies dans global.scss */
 
 * {
   margin: 0;
@@ -248,7 +254,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   background-color: var(--app-background-color);
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
   min-height: 100vh;
   position: relative;
   border-left: 1px solid var(--surface-border);
@@ -299,37 +305,18 @@ body {
 .main-layout {
   display: flex;
   width: 100%;
-  flex-grow: 1;
+  min-height: 100vh;
 }
 
+/* ---- Panneau droit ---- */
 .right-panel {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   padding: 25px;
   display: flex;
   flex-direction: column;
   align-items: center;
   position: relative;
-}
-
-.placeholder-start,
-.placeholder-gameover {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  gap: 20px;
-  text-align: center;
-
-  h1,
-  h2 {
-    font-size: 2.5em;
-    font-weight: 700;
-  }
-  p {
-    color: var(--secondary-font-color);
-    font-size: 1.1em;
-  }
 }
 
 .home-icon {
@@ -384,7 +371,7 @@ body {
   flex-direction: column;
   gap: 8px;
   min-width: 180px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 
   button {
     font-family: inherit;
@@ -425,6 +412,16 @@ body {
   outline: none;
   &:hover {
     border-color: var(--accent-color);
+  }
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 800px) {
+  .main-layout {
+    flex-direction: column;
+  }
+  .right-panel {
+    order: 1;
   }
 }
 </style>
