@@ -63,6 +63,7 @@ export default {
   // App
   rulesTitle: 'Game Rules',
   rulesTrap: '⚠️ Watch out for <strong>traps</strong>: press <strong>nothing</strong> on red tiles.',
+  rulesCesar: '🔄 Caesar cipher: shift the requested letter by the indicated number.',
   exportJson: '📥 Export JSON',
   importJson: '📤 Import JSON',
   quitConfirm: 'Quit current game?',

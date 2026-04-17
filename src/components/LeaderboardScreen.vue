@@ -2,6 +2,11 @@
   <div class="leaderboard-screen">
     <h2>{{ t("leaderboardTitle") }}</h2>
 
+    <!-- Podium top 3 -->
+    <div v-if="scores.length > 0" class="podium-wrapper">
+      <Podium :entries="scores.slice(0, 3)" />
+    </div>
+
     <p v-if="scores.length === 0" class="empty">{{ t("noScores") }}</p>
 
     <table v-else class="scores-table">
@@ -41,6 +46,7 @@
 
 <script setup>
 import { useI18n } from "../i18n/index.js";
+import Podium from "./Podium.vue";
 
 const { t } = useI18n();
 
@@ -63,6 +69,14 @@ function rankClass(index) {
   width: 100%;
   padding: 24px 20px;
   text-align: center;
+}
+
+.podium-wrapper {
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 24px;
+  padding: 0 16px;
 }
 
 .empty {
@@ -109,15 +123,15 @@ function rankClass(index) {
 }
 
 .rank-1 {
-  background: rgba(255, 215, 0, 0.12);
+  background: var(--rank-1-bg, #fff9c4);
   font-weight: 700;
 }
 .rank-2 {
-  background: rgba(192, 192, 192, 0.1);
+  background: var(--rank-2-bg, #f0f0f0);
   font-weight: 600;
 }
 .rank-3 {
-  background: rgba(205, 127, 50, 0.1);
+  background: var(--rank-3-bg, #ffe0b2);
   font-weight: 600;
 }
 

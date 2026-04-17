@@ -63,6 +63,7 @@ export default {
   // App
   rulesTitle: 'Règles du Jeu',
   rulesTrap: '⚠️ Attention aux <strong>pièges</strong> : ne tapez <strong>rien</strong> sur les tuiles rouges.',
+  rulesCesar: '🔄 Chiffre de César : décalez la lettre demandée du nombre indiqué.',
   exportJson: '📥 Exporter JSON',
   importJson: '📤 Importer JSON',
   quitConfirm: 'Quitter la partie en cours ?',
