@@ -6,14 +6,15 @@
       'color-invert': glitchEffects?.colorInvert,
     }"
   >
-    <!-- Countdown -->
-    <Transition name="countdown-fade">
-      <div v-if="state === 'COUNTDOWN'" class="countdown-overlay">
-        <span class="countdown-number" :key="countdownValue">{{
-          countdownValue > 0 ? countdownValue : "GO!"
-        }}</span>
-      </div>
-    </Transition>
+    <!-- Countdown : toujours dans le DOM, visible via classe is-active (évite le freeze GPU) -->
+    <div
+      class="countdown-overlay"
+      :class="{ 'is-active': state === 'COUNTDOWN' }"
+    >
+      <span class="countdown-number" :key="countdownValue">{{
+        countdownValue > 0 ? countdownValue : "GO!"
+      }}</span>
+    </div>
 
     <!-- Playing -->
     <template v-if="state === 'PLAYING' || state === 'COUNTDOWN'">
@@ -129,6 +130,7 @@ defineEmits(["nextLevel", "endGame"]);
   flex-direction: column;
   align-items: center;
   position: relative;
+  transition: filter 150ms ease;
 
   &.screen-shake {
     animation: gameShake 0.3s ease;
@@ -136,7 +138,6 @@ defineEmits(["nextLevel", "endGame"]);
 
   &.color-invert {
     filter: invert(0.88) hue-rotate(180deg);
-    transition: filter 150ms ease;
   }
 }
 
@@ -167,9 +168,17 @@ defineEmits(["nextLevel", "endGame"]);
   align-items: center;
   justify-content: center;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(251, 249, 242, 0.88);
   border-radius: 16px;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 250ms ease;
+
+  &.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .countdown-number {
@@ -180,33 +189,12 @@ defineEmits(["nextLevel", "endGame"]);
 }
 
 @keyframes countdownPulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.3;
+  0%,
+  100% {
+    opacity: 0.4;
   }
   50% {
-    transform: scale(1.1);
     opacity: 1;
-  }
-  100% {
-    transform: scale(0.8);
-    opacity: 0.3;
-  }
-}
-
-.countdown-fade-leave-active {
-  transition: opacity 400ms ease;
-
-  .countdown-number {
-    transition: filter 400ms ease;
-  }
-}
-
-.countdown-fade-leave-to {
-  opacity: 0;
-
-  .countdown-number {
-    filter: blur(20px);
   }
 }
 

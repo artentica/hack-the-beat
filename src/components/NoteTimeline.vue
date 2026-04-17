@@ -1,12 +1,19 @@
 <template>
   <div class="note-timeline" ref="timelineRef">
-    <!-- Timing windows (ok → good → perfect, centered on hit line) -->
-    <div class="timing-zone timing-ok" :style="timingOkStyle"></div>
-    <div class="timing-zone timing-good" :style="timingGoodStyle"></div>
-    <div class="timing-zone timing-perfect" :style="timingPerfectStyle"></div>
-
     <!-- Hit line — simple vertical marker -->
     <div class="hit-line"></div>
+
+    <!-- Hit feedback label au niveau de la hit line -->
+    <Transition name="hit-pop">
+      <div
+        v-if="displayResult"
+        :key="displayResult + '_' + currentBeatIndex"
+        class="hit-feedback"
+        :class="'result-' + displayResult.toLowerCase()"
+      >
+        {{ RESULT_LABELS[displayResult] ?? displayResult }}
+      </div>
+    </Transition>
 
     <div class="timeline-track" :style="trackStyle">
       <div
@@ -40,7 +47,16 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+
+const RESULT_LABELS = {
+  PERFECT: "PERFECT!",
+  GOOD: "GOOD",
+  OK: "OK",
+  MISS: "MISS",
+  TRAP: "TRAP",
+  DODGE: "DODGE",
+};
 
 const props = defineProps({
   sequence: { type: Array, default: () => [] },
@@ -52,6 +68,22 @@ const props = defineProps({
   countdownValue: { type: Number, default: 0 },
 });
 
+// Maintien du label visible 500ms minimum
+const displayResult = ref(null);
+let resultTimer = null;
+watch(
+  () => props.hitResult,
+  (val) => {
+    if (val) {
+      displayResult.value = val;
+      clearTimeout(resultTimer);
+      resultTimer = setTimeout(() => {
+        displayResult.value = null;
+      }, 500);
+    }
+  },
+);
+
 // Track container width for pixel-based transforms
 const trackWidth = ref(640);
 let resizeObserver = null;
@@ -61,22 +93,6 @@ const timelineRef = ref(null);
 const HIT_LINE_POS = 10;
 // Spacing between each beat (% of timeline width)
 const BEAT_SPACING = 10;
-
-// Timing window half-widths in pixels (computed from beat duration)
-const hitLinePx = computed(() => (HIT_LINE_POS / 100) * trackWidth.value);
-
-function timingZoneStyle(windowMs) {
-  const halfPx = Math.max(5, (windowMs / props.beatDurationMs) * beatPx.value);
-  return {
-    left: `${hitLinePx.value - halfPx}px`,
-    width: `${halfPx * 2}px`,
-  };
-}
-
-const timingOkStyle = computed(() => timingZoneStyle(150));
-const timingGoodStyle = computed(() => timingZoneStyle(100));
-const timingPerfectStyle = computed(() => timingZoneStyle(50));
-// How many beats ahead to show
 const VISIBLE_AHEAD = 9;
 
 // Pre-computed beat pixel width (reactive to container resize)
@@ -155,6 +171,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   resizeObserver?.disconnect();
+  clearTimeout(resultTimer);
 });
 </script>
 
@@ -294,5 +311,71 @@ onUnmounted(() => {
   color: var(--main-font-color);
   opacity: 0.8;
   line-height: 1;
+}
+
+// Label de résultat flottant sur la ligne de hit
+.hit-feedback {
+  position: absolute;
+  left: 10%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 6px;
+
+  &.result-perfect {
+    color: #d4a017;
+    background: rgba(255, 215, 0, 0.85);
+  }
+  &.result-good {
+    color: #fff;
+    background: rgba(46, 125, 50, 0.9);
+  }
+  &.result-ok {
+    color: #fff;
+    background: rgba(21, 101, 192, 0.85);
+  }
+  &.result-miss,
+  &.result-trap {
+    color: #fff;
+    background: rgba(198, 40, 40, 0.9);
+  }
+  &.result-dodge {
+    color: #fff;
+    background: rgba(46, 125, 50, 0.9);
+  }
+}
+
+.hit-pop-enter-active {
+  animation: hitIn 0.12s ease-out;
+}
+.hit-pop-leave-active {
+  animation: hitOut 0.2s ease-in forwards;
+}
+
+@keyframes hitIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -65%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+@keyframes hitOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -35%);
+  }
 }
 </style>
