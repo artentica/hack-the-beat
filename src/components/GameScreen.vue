@@ -1,7 +1,10 @@
 <template>
   <div
     class="game-screen"
-    :class="{ 'screen-shake': glitchEffects.screenShake }"
+    :class="{
+      'screen-shake': glitchEffects?.screenShake,
+      'color-invert': glitchEffects?.colorInvert,
+    }"
   >
     <!-- Countdown -->
     <Transition name="countdown-fade">
@@ -22,6 +25,7 @@
         :totalBeats="activeBeatsTotal"
         :beatsRemaining="activeBeatsTotal - activeBeatsPlayed"
         :feedback="lastFeedback"
+        :rockMeter="rockMeter"
       />
 
       <NoteTimeline
@@ -72,10 +76,7 @@
       </div>
     </div>
 
-    <GlitchOverlay
-      :screenShake="glitchEffects.screenShake"
-      :colorInvert="glitchEffects.colorInvert"
-    />
+    <GlitchOverlay :screenShake="glitchEffects?.screenShake" />
   </div>
 </template>
 
@@ -115,6 +116,7 @@ defineProps({
   goodCount: Number,
   okCount: Number,
   missCount: Number,
+  rockMeter: { type: Number, default: 50 },
 });
 
 defineEmits(["nextLevel", "endGame"]);
@@ -130,6 +132,11 @@ defineEmits(["nextLevel", "endGame"]);
 
   &.screen-shake {
     animation: gameShake 0.3s ease;
+  }
+
+  &.color-invert {
+    filter: invert(0.88) hue-rotate(180deg);
+    transition: filter 150ms ease;
   }
 }
 
@@ -160,9 +167,9 @@ defineEmits(["nextLevel", "endGame"]);
   align-items: center;
   justify-content: center;
   z-index: 10;
-  background: rgba(20, 20, 24, 0.9);
+  background: rgba(0, 0, 0, 0.55);
   border-radius: 16px;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(4px);
 }
 
 .countdown-number {
