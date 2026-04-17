@@ -1,28 +1,38 @@
-// Variables globales
+// Variables globales — thème CBTW (clair)
 :root {
-  --accent-color: #f5ed63;
+  --accent-color: #f5ed63; /* Jaune CBTW */
   --accent-hover: #e8e05a;
   --accent-glow: rgba(245, 237, 99, 0.5);
   --brand-dark: #1c1c1c;
 
-  --main-font-color: #e8e8e8;
-  --secondary-font-color: #9e9e9e;
-  --page-background-color: #0d0d0d;
-  --app-background-color: #141418;
-  --surface-color: rgba(255, 255, 255, 0.06);
-  --surface-hover: rgba(255, 255, 255, 0.1);
-  --surface-border: rgba(255, 255, 255, 0.08);
-  --menu-border-color: rgba(255, 255, 255, 0.1);
+  --main-font-color: #212121;
+  --secondary-font-color: #757575;
+  --page-background-color: #fbf9f2;
+  --app-background-color: #ffffff;
+  --surface-color: #f5f5f5;
+  --surface-hover: #ebebeb;
+  --surface-border: #e0e0e0;
+  --menu-border-color: #e0e0e0;
+  --menu-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 
-  --success-color: #4caf50;
-  --danger-color: #f44336;
-  --warning-color: #ff6b35;
+  --success-color: #388e3c;
+  --danger-color: #c62828;
+  --warning-color: #f57c00;
 
-  --tile-bg: rgba(255, 255, 255, 0.04);
-  --tile-border: rgba(255, 255, 255, 0.08);
+  --tile-bg: #f5f5f5;
+  --tile-border: #e0e0e0;
 
-  --font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  /* Podium */
+  --gold-color: #ffd700;
+  --silver-color: #c0c0c0;
+  --bronze-color: #cd7f32;
+  --rank-1-bg: #fff9c4;
+  --rank-2-bg: #f0f0f0;
+  --rank-3-bg: #ffe0b2;
+
+  --font-family:
+    "General Sans", "Roboto", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
 }
 
 // Reset minimal
