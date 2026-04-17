@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="glitch-overlay"
-    :class="{ shaking: screenShake, inverted: colorInvert }"
-  ></div>
+  <div class="glitch-overlay" :class="{ shaking: screenShake }"></div>
 </template>
 
 <script setup>
@@ -21,12 +18,6 @@ defineProps({
 
   &.shaking {
     animation: screenShake 0.3s ease;
-  }
-
-  &.inverted {
-    background: transparent;
-    mix-blend-mode: difference;
-    backdrop-filter: invert(1);
   }
 }
 
