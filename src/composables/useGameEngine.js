@@ -368,8 +368,7 @@ export function useGameEngine() {
     state.value = STATES.GAME_OVER
   }
 
-  function startGame(seed) {
-    if (seed !== undefined) generator.setSeed(seed)
+  function startGame() {
     scoring.reset()
     rockMeter.value = ROCK_METER_START
     setupLevel(1)

@@ -1,33 +1,16 @@
-// Mulberry32 — fast, seedable, deterministic PRNG
-function mulberry32(seed) {
-  let s = seed | 0
-  return function () {
-    s = (s + 0x6d2b79f5) | 0
-    let t = Math.imul(s ^ (s >>> 15), 1 | s)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
 export function useLevelGenerator() {
-  let rng = mulberry32(Date.now())
-
-  function setSeed(seed) {
-    rng = mulberry32(seed)
-  }
-
-  // Fisher–Yates shuffle with the seeded PRNG
+  // Fisher–Yates shuffle
   function shuffle(arr) {
     const a = [...arr]
     for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1))
+      const j = Math.floor(Math.random() * (i + 1))
         ;[a[i], a[j]] = [a[j], a[i]]
     }
     return a
   }
 
   function pickRandom(arr) {
-    return arr[Math.floor(rng() * arr.length)]
+    return arr[Math.floor(Math.random() * arr.length)]
   }
 
   // Pick 8 logos for the grid from a pool of 14
@@ -66,7 +49,7 @@ export function useLevelGenerator() {
     // Distribute rests among the 7 gaps between tiles
     const gaps = new Array(7).fill(0)
     for (let r = 0; r < restCount; r++) {
-      gaps[Math.floor(rng() * 7)]++
+      gaps[Math.floor(Math.random() * 7)]++
     }
 
     const pattern = []
@@ -104,14 +87,14 @@ export function useLevelGenerator() {
         }
 
         // Decoy chance at high levels
-        if (params.hasDecoys && rng() < 0.08) {
+        if (params.hasDecoys && Math.random() < 0.08) {
           seq.push({ tileIndex, isRest: false, isDecoy: true, cesarShift: 0 })
           continue
         }
 
         // César shift
         let cesarShift = 0
-        if (params.hasCesar && rng() < 0.12) {
+        if (params.hasCesar && Math.random() < 0.12) {
           cesarShift = 1
         }
 
@@ -128,7 +111,6 @@ export function useLevelGenerator() {
   }
 
   return {
-    setSeed,
     shuffle,
     pickRandom,
     pickGridLogos,
