@@ -1,5 +1,10 @@
 <template>
-  <div class="note-timeline">
+  <div class="note-timeline" ref="timelineRef">
+    <!-- Timing windows (ok → good → perfect, centered on hit line) -->
+    <div class="timing-zone timing-ok" :style="timingOkStyle"></div>
+    <div class="timing-zone timing-good" :style="timingGoodStyle"></div>
+    <div class="timing-zone timing-perfect" :style="timingPerfectStyle"></div>
+
     <!-- Hit line — simple vertical marker -->
     <div class="hit-line"></div>
 
@@ -56,6 +61,21 @@ const timelineRef = ref(null);
 const HIT_LINE_POS = 10;
 // Spacing between each beat (% of timeline width)
 const BEAT_SPACING = 10;
+
+// Timing window half-widths in pixels (computed from beat duration)
+const hitLinePx = computed(() => (HIT_LINE_POS / 100) * trackWidth.value);
+
+function timingZoneStyle(windowMs) {
+  const halfPx = Math.max(5, (windowMs / props.beatDurationMs) * beatPx.value);
+  return {
+    left: `${hitLinePx.value - halfPx}px`,
+    width: `${halfPx * 2}px`,
+  };
+}
+
+const timingOkStyle = computed(() => timingZoneStyle(150));
+const timingGoodStyle = computed(() => timingZoneStyle(100));
+const timingPerfectStyle = computed(() => timingZoneStyle(50));
 // How many beats ahead to show
 const VISIBLE_AHEAD = 9;
 
@@ -123,7 +143,7 @@ function noteStyle(note) {
 }
 
 onMounted(() => {
-  const el = document.querySelector(".note-timeline");
+  const el = timelineRef.value ?? document.querySelector(".note-timeline");
   if (el) {
     trackWidth.value = el.offsetWidth;
     resizeObserver = new ResizeObserver((entries) => {
@@ -149,6 +169,34 @@ onUnmounted(() => {
   border: 1px solid var(--surface-border, rgba(0, 0, 0, 0.1));
   border-radius: 12px;
   overflow: hidden;
+}
+
+// Timing windows around the hit line
+.timing-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+.timing-ok {
+  background: rgba(100, 160, 255, 0.12);
+  border-left: 1px solid rgba(100, 160, 255, 0.35);
+  border-right: 1px solid rgba(100, 160, 255, 0.35);
+}
+
+.timing-good {
+  background: rgba(76, 200, 80, 0.18);
+  border-left: 1px solid rgba(76, 200, 80, 0.5);
+  border-right: 1px solid rgba(76, 200, 80, 0.5);
+}
+
+.timing-perfect {
+  background: rgba(245, 237, 99, 0.25);
+  border-left: 1px solid rgba(245, 237, 99, 0.7);
+  border-right: 1px solid rgba(245, 237, 99, 0.7);
 }
 
 // Hit line — simple vertical marker
