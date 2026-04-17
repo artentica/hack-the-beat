@@ -19,6 +19,18 @@
         <span class="score-value">{{ level }}</span>
       </div>
     </div>
+    <!-- Rock Meter -->
+    <div class="rock-meter">
+      <span class="rock-meter-label">💀</span>
+      <div class="rock-meter-track">
+        <div
+          class="rock-meter-fill"
+          :class="rockMeterClass"
+          :style="{ width: rockMeter + '%' }"
+        ></div>
+      </div>
+      <span class="rock-meter-label">🤘</span>
+    </div>
     <div class="beat-progress">
       <div
         class="beat-bar"
@@ -57,6 +69,13 @@ const props = defineProps({
   totalBeats: { type: Number, default: 1 },
   beatsRemaining: { type: Number, default: 0 },
   feedback: { type: Object, default: null },
+  rockMeter: { type: Number, default: 50 },
+});
+
+const rockMeterClass = computed(() => {
+  if (props.rockMeter <= 20) return "danger";
+  if (props.rockMeter <= 45) return "warning";
+  return "ok";
 });
 
 const feedbackText = computed(() => {
@@ -204,6 +223,63 @@ const feedbackText = computed(() => {
   100% {
     opacity: 0;
     transform: translateY(-10px);
+  }
+}
+
+/* Rock Meter */
+.rock-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.rock-meter-label {
+  font-size: 1em;
+  flex-shrink: 0;
+}
+
+.rock-meter-track {
+  flex: 1;
+  height: 8px;
+  background: var(--surface-color);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--surface-border);
+}
+
+.rock-meter-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition:
+    width 0.18s ease,
+    background-color 0.3s ease;
+
+  &.ok {
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+  }
+
+  &.warning {
+    background: linear-gradient(90deg, #ff9800, #ffc107);
+    box-shadow: 0 0 6px rgba(255, 152, 0, 0.6);
+    animation: meterPulse 0.6s ease infinite alternate;
+  }
+
+  &.danger {
+    background: linear-gradient(90deg, #f44336, #e91e63);
+    box-shadow: 0 0 8px rgba(244, 67, 54, 0.8);
+    animation: meterPulse 0.3s ease infinite alternate;
+  }
+}
+
+@keyframes meterPulse {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 1;
   }
 }
 </style>

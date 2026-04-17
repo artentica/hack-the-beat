@@ -21,6 +21,19 @@ export function useGameEngine() {
   const level = ref(1)
   const countdownValue = ref(3)
 
+  // Rock Meter (0-100, démarre à 50, game over à 0)
+  const ROCK_METER_START = 50
+  const rockMeter = ref(ROCK_METER_START)
+
+  function changeRockMeter(delta) {
+    rockMeter.value = Math.max(0, Math.min(100, rockMeter.value + delta))
+    if (rockMeter.value === 0) {
+      gameOver()
+      return true // game ended
+    }
+    return false
+  }
+
   // Grid: 8 tiles for 2x4
   const gridTiles = ref([]) // [{ letter, name, svg, index }]
 
@@ -125,6 +138,7 @@ export function useGameEngine() {
     beatProgress.value = 0
     inputResult.value = null
     inputProcessed.value = false
+    rockMeter.value = ROCK_METER_START
 
     // Reset glitch effects
     glitchEffects.value = {
@@ -228,11 +242,13 @@ export function useGameEngine() {
           // Player correctly did NOT press anything during decoy
           scoring.decoyAvoided(level.value)
           inputResult.value = 'DODGE'
+          changeRockMeter(+5)
         } else {
           // Missed the beat
           scoring.missBeat()
           inputResult.value = 'MISS'
           triggerGlitch('miss')
+          if (changeRockMeter(-15)) return
         }
         inputProcessed.value = true
       }
@@ -279,6 +295,7 @@ export function useGameEngine() {
       inputResult.value = 'TRAP'
       inputProcessed.value = true
       triggerGlitch('miss')
+      changeRockMeter(-20)
       return
     }
 
@@ -297,12 +314,15 @@ export function useGameEngine() {
       scoring.hitBeat(accuracy, level.value)
       inputResult.value = accuracy
       inputProcessed.value = true
+      const meterGain = accuracy === 'PERFECT' ? 12 : accuracy === 'GOOD' ? 8 : 4
+      changeRockMeter(+meterGain)
     } else {
       // Wrong key
       scoring.missBeat()
       inputResult.value = 'MISS'
       inputProcessed.value = true
       triggerGlitch('miss')
+      changeRockMeter(-15)
     }
   }
 
@@ -351,6 +371,7 @@ export function useGameEngine() {
   function startGame(seed) {
     if (seed !== undefined) generator.setSeed(seed)
     scoring.reset()
+    rockMeter.value = ROCK_METER_START
     setupLevel(1)
     startCountdown(() => startPlaying())
   }
@@ -393,6 +414,9 @@ export function useGameEngine() {
     beatsRemaining,
     activeBeatsTotal,
     activeBeatsPlayed,
+
+    // Rock Meter
+    rockMeter,
 
     // Scoring (exposed)
     score: scoring.score,
