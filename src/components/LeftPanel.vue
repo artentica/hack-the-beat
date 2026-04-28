@@ -1,52 +1,10 @@
 <template>
   <div class="left-panel">
-    <!-- Logo CBTW -->
+    <!-- Logo CBTW officiel -->
     <div class="left-logo">
-      <svg
-        viewBox="0 0 220 60"
-        xmlns="http://www.w3.org/2000/svg"
-        class="cbtw-wordmark"
-      >
-        <rect
-          x="0"
-          y="10"
-          width="40"
-          height="40"
-          rx="6"
-          fill="var(--accent-color)"
-        />
-        <text
-          x="20"
-          y="38"
-          text-anchor="middle"
-          font-family="var(--font-family)"
-          font-weight="800"
-          font-size="22"
-          fill="var(--brand-dark)"
-        >
-          CB
-        </text>
-        <text
-          x="80"
-          y="42"
-          font-family="var(--font-family)"
-          font-weight="700"
-          font-size="28"
-          fill="var(--brand-dark)"
-        >
-          TW
-        </text>
-        <text
-          x="55"
-          y="58"
-          font-family="var(--font-family)"
-          font-size="9"
-          fill="var(--secondary-font-color)"
-          letter-spacing="1"
-        >
-          Collaboration Betters The World
-        </text>
-      </svg>
+      <span>
+        <img :src="cbtwLogo" alt="CBTW" class="cbtw-logo" />
+      </span>
     </div>
 
     <!-- Règles du jeu -->
@@ -72,6 +30,7 @@
 
 <script setup>
 import { computed } from "vue";
+import cbtwLogo from "../assets/logos/CBTW.svg";
 import { useI18n } from "../i18n/index.js";
 import Podium from "./Podium.vue";
 
@@ -111,7 +70,7 @@ const rules = computed(() => [
   justify-content: center;
 }
 
-.cbtw-wordmark {
+.cbtw-logo {
   width: 180px;
   height: auto;
 }

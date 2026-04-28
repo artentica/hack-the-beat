@@ -101,6 +101,8 @@
     </div>
 
     <PrivacyModal v-if="showPrivacy" @close="showPrivacy = false" />
+
+    <div class="decorative-quarter-circle"></div>
   </div>
 </template>
 
@@ -415,6 +417,19 @@ body {
   }
 }
 
+/* ---- Quart de cercle décoratif CBTW ---- */
+.decorative-quarter-circle {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background-color: var(--accent-color);
+  border-top-left-radius: 200px;
+  z-index: 0;
+  pointer-events: none;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 800px) {
   .main-layout {
@@ -422,6 +437,11 @@ body {
   }
   .right-panel {
     order: 1;
+  }
+  .decorative-quarter-circle {
+    width: 120px;
+    height: 120px;
+    border-top-left-radius: 120px;
   }
 }
 </style>
