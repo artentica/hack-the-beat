@@ -97,6 +97,8 @@ const feedbackText = computed(() => {
   width: 100%;
   max-width: 520px;
   margin: 0 auto 16px;
+  position: relative;
+  padding-bottom: 36px; // reserve space for feedback
 }
 
 .score-row {
@@ -169,11 +171,15 @@ const feedbackText = computed(() => {
 
 /* Feedback popup */
 .feedback {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   text-align: center;
   font-size: 1.4em;
   font-weight: 700;
-  margin-top: 10px;
   padding: 4px 0;
+  pointer-events: none;
 }
 
 .feedback-perfect {

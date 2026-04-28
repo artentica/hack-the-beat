@@ -43,16 +43,28 @@
         {{ t("cesarBanner", { shift: cesarShift }) }}
       </div>
 
-      <TileGrid
-        :tiles="gridTiles"
-        :activeTileIndex="activeTileIndex"
-        :isDecoy="isDecoyBeat"
-        :result="inputResult"
-        :progress="beatProgress"
-        :cesarShift="cesarShift"
-        :blur="glitchEffects.blur"
-        :upcomingBeats="upcomingBeats"
-      />
+      <div class="grid-wrapper">
+        <TileGrid
+          :tiles="gridTiles"
+          :activeTileIndex="activeTileIndex"
+          :isDecoy="isDecoyBeat"
+          :result="inputResult"
+          :progress="beatProgress"
+          :cesarShift="cesarShift"
+          :blur="glitchEffects.blur"
+          :upcomingBeats="upcomingBeats"
+        />
+        <TransitionGroup name="miss-float">
+          <div
+            v-for="m in missFloats"
+            :key="m.id"
+            class="miss-float-indicator"
+            :style="m.style"
+          >
+            {{ m.text }}
+          </div>
+        </TransitionGroup>
+      </div>
     </template>
 
     <!-- Level Complete -->
@@ -82,6 +94,7 @@
 </template>
 
 <script setup>
+import { ref, watch } from "vue";
 import { useI18n } from "../i18n/index.js";
 import GlitchOverlay from "./GlitchOverlay.vue";
 import NoteTimeline from "./NoteTimeline.vue";
@@ -90,7 +103,7 @@ import TileGrid from "./TileGrid.vue";
 
 const { t } = useI18n();
 
-defineProps({
+const props = defineProps({
   state: String,
   countdownValue: Number,
   score: Number,
@@ -121,6 +134,37 @@ defineProps({
 });
 
 defineEmits(["nextLevel", "endGame"]);
+
+// --- Floating MISS / TRAP indicators on the grid ---
+const missFloats = ref([]);
+let missIdCounter = 0;
+
+watch(
+  () => props.inputResult,
+  (val) => {
+    if (val === "MISS" || val === "TRAP") {
+      const id = ++missIdCounter;
+      // Random position across the grid area
+      const x = 10 + Math.random() * 80; // 10-90%
+      const y = 10 + Math.random() * 70; // 10-80%
+      const rotation = -20 + Math.random() * 40; // -20 to +20 deg
+      const scale = 0.85 + Math.random() * 0.35;
+      missFloats.value.push({
+        id,
+        text: val === "TRAP" ? "TRAP!" : "MISS",
+        style: {
+          left: x + "%",
+          top: y + "%",
+          "--rot": rotation + "deg",
+          "--scale": scale,
+        },
+      });
+      setTimeout(() => {
+        missFloats.value = missFloats.value.filter((m) => m.id !== id);
+      }, 700);
+    }
+  },
+);
 </script>
 
 <style lang="scss" scoped>
@@ -250,5 +294,63 @@ defineEmits(["nextLevel", "endGame"]);
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+/* Grid wrapper for floating MISS indicators */
+.grid-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.miss-float-indicator {
+  position: absolute;
+  z-index: 20;
+  pointer-events: none;
+  font-size: 1.5em;
+  font-weight: 900;
+  color: #f44336;
+  text-shadow:
+    0 0 10px rgba(244, 67, 54, 0.7),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%) rotate(var(--rot, 0deg))
+    scale(var(--scale, 1));
+  white-space: nowrap;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.miss-float-enter-active {
+  animation: missIn 0.15s ease-out;
+}
+.miss-float-leave-active {
+  animation: missOut 0.5s ease-in forwards;
+}
+
+@keyframes missIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg))
+      scale(calc(var(--scale, 1) * 1.8));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg))
+      scale(var(--scale, 1));
+  }
+}
+
+@keyframes missOut {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--rot, 0deg))
+      scale(var(--scale, 1));
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 30px)) rotate(var(--rot, 0deg))
+      scale(calc(var(--scale, 1) * 0.6));
+  }
 }
 </style>

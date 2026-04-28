@@ -18,9 +18,12 @@
     <div class="timeline-track" :style="trackStyle">
       <div
         v-for="note in visibleNotes"
-        :key="currentBeatIndex + '-' + note.seqIndex"
+        :key="
+          (isCountdown ? 'c' : 'p') + currentBeatIndex + '-' + note.seqIndex
+        "
         class="timeline-note"
         :class="{
+          'note-paused': isCountdown,
           'note-current': note.seqIndex === currentBeatIndex,
           'note-decoy': note.isDecoy,
           'note-hit':
@@ -41,6 +44,13 @@
           class="note-icon"
         />
         <span class="note-letter">{{ note.letter }}</span>
+
+        <!-- Timing zones at the bottom of the tile -->
+        <div v-if="note.showZones" class="timing-zones">
+          <div class="zone zone-ok"></div>
+          <div class="zone zone-good"></div>
+          <div class="zone zone-perfect"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -74,12 +84,14 @@ let resultTimer = null;
 watch(
   () => props.hitResult,
   (val) => {
+    clearTimeout(resultTimer);
     if (val) {
       displayResult.value = val;
-      clearTimeout(resultTimer);
       resultTimer = setTimeout(() => {
         displayResult.value = null;
       }, 500);
+    } else {
+      displayResult.value = null;
     }
   },
 );
@@ -132,6 +144,10 @@ const visibleNotes = computed(() => {
     // Wider range to include notes that will scroll into view during animation
     if (posPercent < -15 || posPercent > 115) continue;
 
+    // Show zones on current note and next 2 upcoming notes
+    const aheadCount = i - props.currentBeatIndex;
+    const showZones = aheadCount >= 0 && aheadCount <= 2;
+
     notes.push({
       seqIndex: i,
       posPercent,
@@ -139,6 +155,7 @@ const visibleNotes = computed(() => {
       isDecoy: beat.isDecoy || false,
       svg: tile ? tile.svg : null,
       letter: tile ? tile.letter : "",
+      showZones,
     });
   }
 
@@ -149,12 +166,22 @@ const visibleNotes = computed(() => {
  *  --start-x:  pixel position at start of beat
  *  --beat-px:  pixel distance to travel in one beat
  *  --beat-dur: beat duration for the CSS animation */
+// Timing zone widths in pixels (proportional to beat duration)
+const zoneOkW = computed(() => (300 / props.beatDurationMs) * beatPx.value);
+const zoneGoodW = computed(() => (200 / props.beatDurationMs) * beatPx.value);
+const zonePerfectW = computed(
+  () => (100 / props.beatDurationMs) * beatPx.value,
+);
+
 function noteStyle(note) {
   const startX = (note.posPercent / 100) * trackWidth.value - 28;
   return {
     "--start-x": startX + "px",
     "--beat-px": beatPx.value + "px",
     "--beat-dur": props.beatDurationMs + "ms",
+    "--zone-ok-w": zoneOkW.value + "px",
+    "--zone-good-w": zoneGoodW.value + "px",
+    "--zone-perfect-w": zonePerfectW.value + "px",
   };
 }
 
@@ -188,32 +215,39 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-// Timing windows around the hit line
-.timing-zone {
+// Timing zones inside each note tile
+.timing-zones {
   position: absolute;
-  top: 0;
   bottom: 0;
-  z-index: 1;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
+  z-index: 1;
+}
+
+.zone {
+  position: absolute;
+  height: 100%;
   border-radius: 2px;
 }
 
-.timing-ok {
-  background: rgba(100, 160, 255, 0.12);
-  border-left: 1px solid rgba(100, 160, 255, 0.35);
-  border-right: 1px solid rgba(100, 160, 255, 0.35);
+.zone-ok {
+  width: var(--zone-ok-w, 40px);
+  background: rgba(100, 160, 255, 0.35);
 }
 
-.timing-good {
-  background: rgba(76, 200, 80, 0.18);
-  border-left: 1px solid rgba(76, 200, 80, 0.5);
-  border-right: 1px solid rgba(76, 200, 80, 0.5);
+.zone-good {
+  width: var(--zone-good-w, 28px);
+  background: rgba(76, 200, 80, 0.5);
 }
 
-.timing-perfect {
-  background: rgba(245, 237, 99, 0.25);
-  border-left: 1px solid rgba(245, 237, 99, 0.7);
-  border-right: 1px solid rgba(245, 237, 99, 0.7);
+.zone-perfect {
+  width: var(--zone-perfect-w, 16px);
+  background: rgba(245, 237, 99, 0.7);
 }
 
 // Hit line — simple vertical marker
@@ -248,12 +282,18 @@ onUnmounted(() => {
   border-radius: 12px;
   background: var(--surface-color, rgba(0, 0, 0, 0.05));
   border: 2px solid var(--surface-border, rgba(0, 0, 0, 0.1));
+  overflow: hidden;
   z-index: 2;
   will-change: transform;
   backface-visibility: hidden;
   transition:
     border-color 120ms ease,
     box-shadow 120ms ease;
+
+  // Pause scroll animation during countdown
+  &.note-paused {
+    animation-play-state: paused !important;
+  }
 
   &.note-current {
     border-color: var(--accent-color, #f5ed63);

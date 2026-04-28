@@ -155,6 +155,7 @@ export function useGameEngine() {
     inputResult.value = null
     activeTileIndex.value = -1
     beatProgress.value = 0
+    scoring.lastFeedback.value = null
 
     countdownTimer = setInterval(() => {
       countdownValue.value--
