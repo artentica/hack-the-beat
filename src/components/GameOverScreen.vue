@@ -101,7 +101,7 @@
       >
 
       <button class="button accent" :disabled="!canSubmit" @click="submit">
-        💾 Enregistrer
+        <Save :size="16" :stroke-width="2" /> Enregistrer
       </button>
     </template>
 
@@ -117,17 +117,20 @@
     <hr />
     <div class="actions">
       <button @click="$emit('viewScores')" class="button cbtw-style">
-        {{ t("viewScores") }}
+        <Award :size="16" :stroke-width="2" /> {{ t("viewScores") }}
       </button>
       <button @click="$emit('replay')" class="button secondary">
-        {{ t("replay") }}
+        <RotateCcw :size="16" :stroke-width="2" /> {{ t("replay") }}
       </button>
-      <button @click="$emit('home')" class="button">{{ t("home") }}</button>
+      <button @click="$emit('home')" class="button">
+        <Home :size="16" :stroke-width="2" /> {{ t("home") }}
+      </button>
     </div>
   </div>
 </template>
 
 <script setup>
+import { Award, Home, RotateCcw, Save } from "lucide-vue-next";
 import { computed, reactive, ref } from "vue";
 import { useI18n } from "../i18n/index.js";
 

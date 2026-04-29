@@ -5,8 +5,8 @@ export default {
   ruleType: 'Une tuile s\'illumine → tapez la <strong>lettre</strong> correspondante au clavier',
   ruleSpeed: 'Le rythme accélère à chaque niveau. Restez concentré !',
   ruleCombo: 'Plus vous enchaînez sans erreur, plus le <strong>combo</strong> multiplie vos points',
-  startGame: '▶ Démarrer le jeu',
-  viewScores: '🏅 Voir les scores',
+  startGame: 'Démarrer le jeu',
+  viewScores: 'Voir les scores',
 
   // Score display
   score: 'Score',
@@ -22,22 +22,22 @@ export default {
   feedbackTrap: 'PIÈGE !',
 
   // Game screen
-  cesarBanner: '⚠️ CÉSAR +{shift} — Décalez la lettre !',
+  cesarBanner: 'CÉSAR +{shift} — Décalez la lettre !',
 
   // Level complete
   levelComplete: 'Niveau {level} terminé !',
   levelScore: 'Score :',
-  nextLevel: '⏭ Niveau suivant',
-  endGameBtn: '🛑 Terminer la partie',
+  nextLevel: 'Niveau suivant',
+  endGameBtn: 'Terminer la partie',
 
   // Game over
   gameOver: 'Partie Terminée !',
   finalScore: 'Score final :',
   levelReached: 'Niveau atteint :',
   bestCombo: 'Meilleur combo :',
-  perfectCount: '🎯 {count} Perfect',
-  replay: '🔄 Rejouer',
-  home: '🏠 Accueil',
+  perfectCount: '{count} Perfect',
+  replay: 'Rejouer',
+  home: 'Accueil',
 
   // Leaderboard
   leaderboardTitle: 'Tableau des Scores',
@@ -55,17 +55,17 @@ export default {
   required: '*',
   requiredFields: '* Champs obligatoires',
   consent: 'Je consens au traitement de mes données personnelles conformément à la Politique de Confidentialité de CBTW aux fins décrites ci-dessus.',
-  saveBtn: '💾 Enregistrer',
+  saveBtn: 'Enregistrer',
   savedMsg: 'Score enregistré avec succès !',
   savedRank: 'Vous êtes classé(e) <strong>#{rank}</strong> !',
   privacyLink: 'Politique de confidentialité',
 
   // App
   rulesTitle: 'Règles du Jeu',
-  rulesTrap: '⚠️ Attention aux <strong>pièges</strong> : ne tapez <strong>rien</strong> sur les tuiles rouges.',
-  rulesCesar: '🔄 Chiffre de César : décalez la lettre demandée du nombre indiqué.',
-  exportJson: '📥 Exporter JSON',
-  importJson: '📤 Importer JSON',
+  rulesTrap: 'Attention aux <strong>pièges</strong> : ne tapez <strong>rien</strong> sur les tuiles rouges.',
+  rulesCesar: 'Chiffre de César : décalez la lettre demandée du nombre indiqué.',
+  exportJson: 'Exporter JSON',
+  importJson: 'Importer JSON',
   quitConfirm: 'Quitter la partie en cours ?',
   importSuccess: 'Scores importés avec succès !',
 }

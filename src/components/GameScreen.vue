@@ -74,17 +74,22 @@
         {{ t("levelScore") }} <strong>{{ score }}</strong>
       </p>
       <div class="level-stats">
-        <span>🎯 Perfect: {{ perfectCount }}</span>
-        <span>👍 Good: {{ goodCount }}</span>
-        <span>✅ OK: {{ okCount }}</span>
-        <span>❌ Miss: {{ missCount }}</span>
+        <span
+          ><Target :size="14" :stroke-width="2" /> Perfect:
+          {{ perfectCount }}</span
+        >
+        <span
+          ><ThumbsUp :size="14" :stroke-width="2" /> Good: {{ goodCount }}</span
+        >
+        <span><Check :size="14" :stroke-width="2" /> OK: {{ okCount }}</span>
+        <span><X :size="14" :stroke-width="2" /> Miss: {{ missCount }}</span>
       </div>
       <div class="level-actions">
         <button @click="$emit('nextLevel')" class="button cbtw-style">
-          {{ t("nextLevel") }}
+          <SkipForward :size="16" :stroke-width="2" /> {{ t("nextLevel") }}
         </button>
         <button @click="$emit('endGame')" class="button secondary">
-          {{ t("endGameBtn") }}
+          <Square :size="16" :stroke-width="2" /> {{ t("endGameBtn") }}
         </button>
       </div>
     </div>
@@ -94,6 +99,14 @@
 </template>
 
 <script setup>
+import {
+  Check,
+  SkipForward,
+  Square,
+  Target,
+  ThumbsUp,
+  X,
+} from "lucide-vue-next";
 import { ref, watch } from "vue";
 import { useI18n } from "../i18n/index.js";
 import GlitchOverlay from "./GlitchOverlay.vue";

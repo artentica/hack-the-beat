@@ -38,13 +38,14 @@
 
     <div class="actions">
       <button @click="$emit('home')" class="button cbtw-style">
-        {{ t("home") }}
+        <Home :size="16" :stroke-width="2" /> {{ t("home") }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
+import { Home } from "lucide-vue-next";
 import { useI18n } from "../i18n/index.js";
 import Podium from "./Podium.vue";
 

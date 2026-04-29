@@ -21,7 +21,9 @@
     </div>
     <!-- Rock Meter -->
     <div class="rock-meter">
-      <span class="rock-meter-label">💀</span>
+      <span class="rock-meter-label"
+        ><Skull :size="18" :stroke-width="2"
+      /></span>
       <div class="rock-meter-track">
         <div
           class="rock-meter-fill"
@@ -29,7 +31,9 @@
           :style="{ width: rockMeter + '%' }"
         ></div>
       </div>
-      <span class="rock-meter-label">🤘</span>
+      <span class="rock-meter-label"
+        ><Hand :size="18" :stroke-width="2"
+      /></span>
     </div>
     <div class="beat-progress">
       <div
@@ -56,6 +60,7 @@
 </template>
 
 <script setup>
+import { Hand, Skull } from "lucide-vue-next";
 import { computed } from "vue";
 import { useI18n } from "../i18n/index.js";
 

@@ -3,7 +3,7 @@
     <!-- 2e place (gauche) -->
     <div class="podium-place place-2" :class="{ empty: !entries[1] }">
       <template v-if="entries[1]">
-        <span class="podium-rank">🥈</span>
+        <span class="podium-rank"><Medal :size="28" :stroke-width="2" /></span>
         <span class="podium-name">{{ entries[1].firstName }}</span>
         <span class="podium-score">{{ entries[1].score }}</span>
       </template>
@@ -11,7 +11,7 @@
     <!-- 1re place (centre) -->
     <div class="podium-place place-1" :class="{ empty: !entries[0] }">
       <template v-if="entries[0]">
-        <span class="podium-rank">🥇</span>
+        <span class="podium-rank"><Crown :size="32" :stroke-width="2" /></span>
         <span class="podium-name">{{ entries[0].firstName }}</span>
         <span class="podium-score">{{ entries[0].score }}</span>
       </template>
@@ -19,7 +19,7 @@
     <!-- 3e place (droite) -->
     <div class="podium-place place-3" :class="{ empty: !entries[2] }">
       <template v-if="entries[2]">
-        <span class="podium-rank">🥉</span>
+        <span class="podium-rank"><Medal :size="24" :stroke-width="2" /></span>
         <span class="podium-name">{{ entries[2].firstName }}</span>
         <span class="podium-score">{{ entries[2].score }}</span>
       </template>
@@ -28,6 +28,8 @@
 </template>
 
 <script setup>
+import { Crown, Medal } from "lucide-vue-next";
+
 defineProps({
   entries: { type: Array, default: () => [] },
 });

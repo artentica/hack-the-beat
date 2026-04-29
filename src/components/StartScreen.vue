@@ -5,31 +5,32 @@
 
     <div class="rules-preview">
       <div class="rule-card">
-        <span class="rule-icon">⌨️</span>
+        <span class="rule-icon"><Keyboard :size="24" :stroke-width="2" /></span>
         <p v-html="t('ruleType')"></p>
       </div>
       <div class="rule-card">
-        <span class="rule-icon">⚡</span>
+        <span class="rule-icon"><Zap :size="24" :stroke-width="2" /></span>
         <p>{{ t("ruleSpeed") }}</p>
       </div>
       <div class="rule-card">
-        <span class="rule-icon">🏆</span>
+        <span class="rule-icon"><Trophy :size="24" :stroke-width="2" /></span>
         <p v-html="t('ruleCombo')"></p>
       </div>
     </div>
 
     <div class="start-buttons">
       <button @click="$emit('start')" class="button cbtw-style">
-        {{ t("startGame") }}
+        <Play :size="16" :stroke-width="2.5" /> {{ t("startGame") }}
       </button>
       <button @click="$emit('viewScores')" class="button secondary">
-        {{ t("viewScores") }}
+        <Award :size="16" :stroke-width="2" /> {{ t("viewScores") }}
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
+import { Award, Keyboard, Play, Trophy, Zap } from "lucide-vue-next";
 import { useI18n } from "../i18n/index.js";
 
 defineEmits(["start", "viewScores"]);

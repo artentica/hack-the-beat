@@ -3,11 +3,11 @@
     <!-- Settings menu -->
     <div class="settings-container">
       <span class="settings-icon" @click="showSettings = !showSettings"
-        >⚙️</span
-      >
+        ><Settings :size="20" :stroke-width="2"
+      /></span>
       <div v-if="showSettings" class="settings-menu">
         <div class="settings-lang">
-          <span>🌐</span>
+          <span><Globe :size="18" :stroke-width="2" /></span>
           <select
             :value="locale"
             @change="setLocale($event.target.value)"
@@ -31,7 +31,7 @@
 
     <!-- Retour accueil (hors start screen) -->
     <div v-if="screen !== 'start'" class="home-icon" @click="confirmHome">
-      🏠
+      <Home :size="22" :stroke-width="2" />
     </div>
 
     <div class="main-layout">
@@ -107,6 +107,7 @@
 </template>
 
 <script setup>
+import { Globe, Home, Settings } from "lucide-vue-next";
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 import GameOverScreen from "./components/GameOverScreen.vue";
 import GameScreen from "./components/GameScreen.vue";
@@ -281,6 +282,10 @@ body {
   border-radius: 12px;
   font-size: 0.95em;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
   transition:
     background-color 0.2s,
     transform 0.15s,
