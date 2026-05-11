@@ -33,10 +33,10 @@ async function startGame(page) {
   )
 }
 
-/** Get current grid tile letters (array of 8 letters in grid order) */
-function getGridLetters(page) {
+/** Get current grid tile keys (array of 4 keys in grid order: D, F, J, K) */
+function getGridKeys(page) {
   return page.evaluate(() =>
-    window.__engine.gridTiles.value.map((t) => t.letter),
+    window.__engine.gridTiles.value.map((t) => t.key),
   )
 }
 
@@ -44,10 +44,8 @@ function getGridLetters(page) {
 function getSequence(page) {
   return page.evaluate(() =>
     window.__engine.sequence.value.map((b) => ({
-      tileIndex: b.tileIndex,
+      laneIndex: b.laneIndex,
       isRest: b.isRest,
-      isDecoy: b.isDecoy,
-      cesarShift: b.cesarShift,
     })),
   )
 }
@@ -62,7 +60,7 @@ function getBpm(page) {
  * Reads the sequence and grid, then presses the right key at the center of each beat.
  */
 async function playLevelPerfectly(page) {
-  const letters = await getGridLetters(page)
+  const keys = await getGridKeys(page)
   const seq = await getSequence(page)
   const bpmVal = await getBpm(page)
   const beatMs = 60000 / bpmVal
@@ -74,50 +72,12 @@ async function playLevelPerfectly(page) {
       continue
     }
 
-    if (beat.isDecoy) {
-      // Don't press — just wait
-      await page.waitForTimeout(beatMs)
-      continue
-    }
-
     // Wait until center of beat (PERFECT timing)
     await page.waitForTimeout(beatMs * 0.45)
 
-    // Resolve correct letter (with César shift)
-    let letter = letters[beat.tileIndex]
-    if (beat.cesarShift > 0) {
-      // Shift in the LETTERS pool — we need to read it from the page
-      letter = await page.evaluate(
-        ({ tileIdx, shift }) => {
-          const allLetters = window.__engine.gridTiles.value.map(
-            (t) => t.letter,
-          )
-          // Actually LETTERS is from techLogos, not gridTiles. Use the global pool
-          const TECH_LETTERS = [
-            'A',
-            'B',
-            'C',
-            'D',
-            'G',
-            'H',
-            'J',
-            'K',
-            'N',
-            'P',
-            'R',
-            'S',
-            'T',
-            'V',
-          ]
-          const base = window.__engine.gridTiles.value[tileIdx].letter
-          const baseIdx = TECH_LETTERS.indexOf(base)
-          return TECH_LETTERS[(baseIdx + shift) % TECH_LETTERS.length]
-        },
-        { tileIdx: beat.tileIndex, shift: beat.cesarShift },
-      )
-    }
-
-    await page.keyboard.press(letter.toLowerCase())
+    // Press the correct lane key
+    const key = keys[beat.laneIndex]
+    await page.keyboard.press(key.toLowerCase())
 
     // Wait the remaining beat time
     await page.waitForTimeout(beatMs * 0.55)
@@ -165,16 +125,16 @@ test.describe('Game Phases', () => {
     await expect(timeline).toBeVisible()
   })
 
-  test('Tiles appear in 2x4 grid with 8 logos', async ({ page }) => {
+  test('Tiles appear in grid with 4 lanes', async ({ page }) => {
     await startGame(page)
     const tiles = page.locator('.tile')
-    await expect(tiles).toHaveCount(8)
+    await expect(tiles).toHaveCount(4)
 
-    // Each tile has a letter
-    const letters = await getGridLetters(page)
-    expect(letters).toHaveLength(8)
-    // All letters are unique
-    expect(new Set(letters).size).toBe(8)
+    // Each tile has a key
+    const keys = await getGridKeys(page)
+    expect(keys).toHaveLength(4)
+    // All keys are unique
+    expect(new Set(keys).size).toBe(4)
   })
 
   test('Level 1: complete with perfect play → LEVEL_COMPLETE', async ({
@@ -267,19 +227,18 @@ test.describe('Gameplay mechanics', () => {
     await page.waitForFunction(() => {
       const e = window.__engine
       const beat = e.sequence.value[e.currentBeatIndex.value]
-      return beat && !beat.isRest && !beat.isDecoy
+      return beat && !beat.isRest
     })
 
-    // Press a key that's definitely wrong (press 'z' which is never a tile)
-    // Actually we need a letter in the grid. Find the wrong one.
+    // Press a key that's in the grid but wrong for this beat
     const wrongKey = await page.evaluate(() => {
       const e = window.__engine
       const beat = e.sequence.value[e.currentBeatIndex.value]
-      const correctLetter = e.gridTiles.value[beat.tileIndex].letter
-      const otherLetter = e.gridTiles.value.find(
-        (t) => t.letter !== correctLetter,
+      const correctKey = e.gridTiles.value[beat.laneIndex].key
+      const otherTile = e.gridTiles.value.find(
+        (t) => t.key !== correctKey,
       )
-      return otherLetter.letter.toLowerCase()
+      return otherTile.key.toLowerCase()
     })
 
     await page.keyboard.press(wrongKey)
@@ -310,7 +269,7 @@ test.describe('Gameplay mechanics', () => {
     await startGame(page)
 
     // Play a few beats perfectly, reading combo after each
-    const letters = await getGridLetters(page)
+    const keys = await getGridKeys(page)
     const seq = await getSequence(page)
     const bpmVal = await getBpm(page)
     const beatMs = 60000 / bpmVal
@@ -318,13 +277,13 @@ test.describe('Gameplay mechanics', () => {
     let comboSeen = 0
     for (let i = 0; i < Math.min(seq.length, 12); i++) {
       const beat = seq[i]
-      if (beat.isRest || beat.isDecoy) {
+      if (beat.isRest) {
         await page.waitForTimeout(beatMs)
         continue
       }
 
       await page.waitForTimeout(beatMs * 0.45)
-      await page.keyboard.press(letters[beat.tileIndex].toLowerCase())
+      await page.keyboard.press(keys[beat.laneIndex].toLowerCase())
 
       const combo = await engineVal(page, 'combo')
       if (combo > comboSeen) comboSeen = combo
@@ -364,6 +323,11 @@ test.describe('Language switching', () => {
 })
 
 test.describe('Play through level 5+ (glitch features)', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/')
+    await getEngine(page)
+  })
+
   test('Can reach level 5 with screen shake', async ({ page }) => {
     test.setTimeout(300000)
     await startGame(page)

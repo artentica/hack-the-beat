@@ -99,12 +99,12 @@
 
 <script setup>
 import {
-    Check,
-    SkipForward,
-    Square,
-    Target,
-    ThumbsUp,
-    X,
+  Check,
+  SkipForward,
+  Square,
+  Target,
+  ThumbsUp,
+  X,
 } from "lucide-vue-next";
 import { onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "../i18n/index.js";
@@ -148,13 +148,13 @@ const emit = defineEmits(["nextLevel", "endGame"]);
 
 // Spacebar to go to next level
 function onKeyDown(e) {
-  if (e.code === 'Space' && props.state === 'LEVEL_COMPLETE') {
+  if (e.code === "Space" && props.state === "LEVEL_COMPLETE") {
     e.preventDefault();
-    emit('nextLevel');
+    emit("nextLevel");
   }
 }
-onMounted(() => window.addEventListener('keydown', onKeyDown));
-onUnmounted(() => window.removeEventListener('keydown', onKeyDown));
+onMounted(() => window.addEventListener("keydown", onKeyDown));
+onUnmounted(() => window.removeEventListener("keydown", onKeyDown));
 
 // --- Floating MISS indicators ---
 const missFloats = ref([]);

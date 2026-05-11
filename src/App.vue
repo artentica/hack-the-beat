@@ -122,6 +122,11 @@ const gameOverRef = ref(null);
 const engine = useGameEngine();
 const leaderboard = useLeaderboard();
 const { t, locale, setLocale } = useI18n();
+
+// Expose engine for E2E tests
+if (typeof window !== 'undefined') {
+  window.__engine = engine;
+}
 const showSettings = ref(false);
 const showPrivacy = ref(false);
 const fileInput = ref(null);
