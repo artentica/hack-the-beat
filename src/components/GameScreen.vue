@@ -3,6 +3,7 @@
     class="game-screen"
     :class="{
       'screen-shake': glitchEffects?.screenShake,
+      'blur-glitch': glitchEffects?.blurGlitch,
     }"
   >
     <!-- Countdown -->
@@ -198,6 +199,34 @@ watch(
 
   &.screen-shake {
     animation: gameShake 0.3s ease;
+  }
+
+  &.blur-glitch {
+    animation: blurGlitch 0.4s ease;
+  }
+
+  &.screen-shake.blur-glitch {
+    animation:
+      gameShake 0.3s ease,
+      blurGlitch 0.4s ease;
+  }
+}
+
+@keyframes blurGlitch {
+  0% {
+    filter: blur(0);
+  }
+  20% {
+    filter: blur(3px);
+  }
+  50% {
+    filter: blur(5px) brightness(1.05);
+  }
+  80% {
+    filter: blur(2px);
+  }
+  100% {
+    filter: blur(0);
   }
 }
 

@@ -146,16 +146,16 @@ const visibleNotes = computed(() => {
 
 function noteStyle(note) {
   const SHAPE_CLIP = {
-    circle: 'none',
-    square: 'none',
-    triangle: 'polygon(50% 0%, 100% 100%, 0% 100%)',
-    diamond: 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+    circle: "none",
+    square: "none",
+    triangle: "polygon(50% 0%, 100% 100%, 0% 100%)",
+    diamond: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
   };
   const SHAPE_RADIUS = {
-    circle: '50%',
-    square: '14px',
-    triangle: '0',
-    diamond: '0',
+    circle: "50%",
+    square: "14px",
+    triangle: "0",
+    diamond: "0",
   };
   const startX = (note.posPercent / 100) * trackWidth.value - 38;
   return {
@@ -164,8 +164,8 @@ function noteStyle(note) {
     "--beat-dur": props.beatDurationMs + "ms",
     "--lane-color": note.color,
     "--lane-color-glow": note.color + "88",
-    "--note-radius": SHAPE_RADIUS[note.shape] || '14px',
-    clipPath: SHAPE_CLIP[note.shape] || 'none',
+    "--note-radius": SHAPE_RADIUS[note.shape] || "14px",
+    clipPath: SHAPE_CLIP[note.shape] || "none",
   };
 }
 
@@ -267,9 +267,9 @@ onUnmounted(() => {
   }
 
   &.note-miss {
-    border-color: var(--danger-color, #f44336);
-    background: var(--danger-color, #f44336);
-    box-shadow: 0 0 14px rgba(244, 67, 54, 0.6);
+    border-color: var(--miss-color);
+    background: var(--miss-color);
+    box-shadow: 0 0 14px var(--miss-color-glow);
   }
 }
 

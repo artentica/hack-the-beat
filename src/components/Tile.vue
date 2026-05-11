@@ -109,9 +109,19 @@ const progressPercent = computed(() => Math.round(props.progress * 100));
   }
 
   &.result-miss {
-    border-color: var(--danger-color, #f44336);
-    box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
+    border-color: var(--miss-color);
+    background: var(--miss-color);
+    box-shadow: 0 0 15px var(--miss-color-glow);
     animation: tileShake 0.3s ease;
+
+    .tile-letter {
+      color: #fff;
+    }
+
+    .tile-watermark {
+      fill: #fff;
+      opacity: 0.15;
+    }
   }
 }
 

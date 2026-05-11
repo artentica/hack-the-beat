@@ -3,14 +3,15 @@ export function useLevelGenerator() {
     return arr[Math.floor(Math.random() * arr.length)]
   }
 
-  // Level parameters — BPM starts at 80, caps at 180
+  // Level parameters — BPM starts at 90, +15 per level (no cap)
   function getLevelParams(level) {
-    const bpm = Math.min(180, 80 + level * 8)
+    const bpm = 90 + level * 15
     const loopCount = Math.min(6, 2 + Math.ceil(level / 2))
     const hasScreenShake = level >= 5
+    const hasBlurGlitch = level >= 5
     const activeLanes = level <= 2 ? 2 : level <= 4 ? 3 : 4
 
-    return { bpm, loopCount, hasScreenShake, activeLanes }
+    return { bpm, loopCount, hasScreenShake, hasBlurGlitch, activeLanes }
   }
 
   // Pre-defined rhythmic patterns per lane count

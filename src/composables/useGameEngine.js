@@ -79,9 +79,10 @@ export function useGameEngine() {
   const inputResult = ref(null)
   const inputProcessed = ref(false)
 
-  // Glitch effects (simplified — only screen shake remains)
+  // Glitch effects
   const glitchEffects = ref({
     screenShake: false,
+    blurGlitch: false,
   })
   let shakeTimer = null
   const levelParams = ref(null)
@@ -142,7 +143,7 @@ export function useGameEngine() {
     inputProcessed.value = false
     rockMeter.value = ROCK_METER_START
 
-    glitchEffects.value = { screenShake: false }
+    glitchEffects.value = { screenShake: false, blurGlitch: false }
   }
 
   function startCountdown(onComplete) {
@@ -220,7 +221,8 @@ export function useGameEngine() {
           scoring.missBeat()
           inputResult.value = 'MISS'
           triggerGlitch()
-          if (changeRockMeter(-10)) return
+          const missLoss = Math.min(25, 8 + level.value * 2)
+          if (changeRockMeter(-missLoss)) return
         }
         inputProcessed.value = true
       }
@@ -270,7 +272,7 @@ export function useGameEngine() {
       scoring.hitBeat(accuracy, level.value)
       inputResult.value = accuracy
       inputProcessed.value = true
-      const meterGain = accuracy === 'PERFECT' ? 12 : accuracy === 'GOOD' ? 8 : 4
+      const meterGain = accuracy === 'PERFECT' ? 5 : accuracy === 'GOOD' ? 3 : 1
       changeRockMeter(+meterGain)
     } else {
       // Wrong lane
@@ -278,9 +280,12 @@ export function useGameEngine() {
       inputResult.value = 'MISS'
       inputProcessed.value = true
       triggerGlitch()
-      changeRockMeter(-10)
+      const missLoss = Math.min(25, 8 + level.value * 2)
+      changeRockMeter(-missLoss)
     }
   }
+
+  let colorGlitchTimer = null
 
   function triggerGlitch() {
     if (!levelParams.value) return
@@ -294,6 +299,14 @@ export function useGameEngine() {
           glitchEffects.value.screenShake = false
         }, 300)
       })
+    }
+
+    if (levelParams.value.hasBlurGlitch) {
+      clearTimeout(colorGlitchTimer)
+      glitchEffects.value.blurGlitch = true
+      colorGlitchTimer = setTimeout(() => {
+        glitchEffects.value.blurGlitch = false
+      }, 400)
     }
   }
 
@@ -318,7 +331,10 @@ export function useGameEngine() {
   function startGame() {
     scoring.reset()
     rockMeter.value = ROCK_METER_START
-    setupLevel(1)
+    const startLevel = (import.meta.env.DEV || import.meta.env.MODE === 'test')
+      ? parseInt(new URLSearchParams(window.location.search).get('level')) || 1
+      : 1
+    setupLevel(startLevel)
     startCountdown(() => startPlaying())
   }
 

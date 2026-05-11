@@ -124,7 +124,7 @@ const leaderboard = useLeaderboard();
 const { t, locale, setLocale } = useI18n();
 
 // Expose engine for E2E tests
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.__engine = engine;
 }
 const showSettings = ref(false);
