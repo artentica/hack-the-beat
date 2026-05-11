@@ -13,21 +13,44 @@ import swiftSvg from '../assets/logos/swift.svg'
 import typescriptSvg from '../assets/logos/typescript.svg'
 import vuejsSvg from '../assets/logos/vuejs.svg'
 
-export const TECH_LOGOS = [
-  { letter: 'A', name: 'Angular', svg: angularSvg },
-  { letter: 'B', name: 'Bootstrap', svg: bootstrapSvg },
-  { letter: 'C', name: 'C++', svg: cppSvg },
-  { letter: 'D', name: 'Docker', svg: dockerSvg },
-  { letter: 'G', name: 'GitHub', svg: githubSvg },
-  { letter: 'H', name: 'HTML5', svg: html5Svg },
-  { letter: 'J', name: 'Java', svg: javaSvg },
-  { letter: 'K', name: 'Kotlin', svg: kotlinSvg },
-  { letter: 'N', name: 'Node.js', svg: nodejsSvg },
-  { letter: 'P', name: 'Python', svg: pythonSvg },
-  { letter: 'R', name: 'React', svg: reactSvg },
-  { letter: 'S', name: 'Swift', svg: swiftSvg },
-  { letter: 'T', name: 'TypeScript', svg: typescriptSvg },
-  { letter: 'V', name: 'Vue.js', svg: vuejsSvg },
+// Pool of all tech logos (used for decorative rotation per level)
+export const TECH_POOL = [
+  { name: 'Angular', svg: angularSvg },
+  { name: 'Bootstrap', svg: bootstrapSvg },
+  { name: 'C++', svg: cppSvg },
+  { name: 'Docker', svg: dockerSvg },
+  { name: 'GitHub', svg: githubSvg },
+  { name: 'HTML5', svg: html5Svg },
+  { name: 'Java', svg: javaSvg },
+  { name: 'Kotlin', svg: kotlinSvg },
+  { name: 'Node.js', svg: nodejsSvg },
+  { name: 'Python', svg: pythonSvg },
+  { name: 'React', svg: reactSvg },
+  { name: 'Swift', svg: swiftSvg },
+  { name: 'TypeScript', svg: typescriptSvg },
+  { name: 'Vue.js', svg: vuejsSvg },
 ]
 
-export const LETTERS = TECH_LOGOS.map(t => t.letter)
+// 4-lane system: fixed keys, colors, and shapes
+export const LANE_KEYS = ['D', 'F', 'J', 'K']
+
+export const LANE_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f']
+
+export const LANE_SHAPES = ['circle', 'square', 'triangle', 'diamond']
+
+export const LANES = LANE_KEYS.map((key, i) => ({
+  key,
+  laneIndex: i,
+  color: LANE_COLORS[i],
+  shape: LANE_SHAPES[i],
+}))
+
+// Pick 4 tech logos for the current level (decorative only)
+export function pickLevelTechs(level) {
+  const offset = ((level - 1) * 4) % TECH_POOL.length
+  const techs = []
+  for (let i = 0; i < 4; i++) {
+    techs.push(TECH_POOL[(offset + i) % TECH_POOL.length])
+  }
+  return techs
+}

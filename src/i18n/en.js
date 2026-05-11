@@ -2,7 +2,7 @@ export default {
   // Start screen
   gameTitle: 'Panic at the Deploy',
   gameSubtitle: 'Test your developer reflexes!',
-  ruleType: 'A tile lights up → press the matching <strong>letter</strong> on your keyboard',
+  ruleType: 'Notes scroll by → press <strong>D F J K</strong> at the right time',
   ruleSpeed: 'The rhythm speeds up every level. Stay focused!',
   ruleCombo: 'Chain hits without mistakes to build your <strong>combo</strong> multiplier',
   startGame: 'Start Game',
@@ -18,11 +18,7 @@ export default {
   feedbackGood: 'GOOD!',
   feedbackOk: 'OK',
   feedbackMiss: 'MISS',
-  feedbackDodge: 'DODGED!',
-  feedbackTrap: 'TRAP!',
-
   // Game screen
-  cesarBanner: 'CAESAR +{shift} — Shift the letter!',
 
   // Level complete
   levelComplete: 'Level {level} complete!',
@@ -62,8 +58,7 @@ export default {
 
   // App
   rulesTitle: 'Game Rules',
-  rulesTrap: 'Watch out for <strong>traps</strong>: press <strong>nothing</strong> on red tiles.',
-  rulesCesar: 'Caesar cipher: shift the requested letter by the indicated number.',
+
   exportJson: 'Export JSON',
   importJson: 'Import JSON',
   quitConfirm: 'Quit current game?',

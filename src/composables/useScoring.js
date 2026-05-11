@@ -18,7 +18,6 @@ export function useScoring() {
   })
 
   function hitBeat(accuracy, level) {
-    // accuracy: 'PERFECT' | 'GOOD' | 'OK'
     const accuracyBonus = accuracy === 'PERFECT' ? 3 : accuracy === 'GOOD' ? 2 : 1
 
     if (accuracy === 'PERFECT') perfectCount.value++
@@ -39,22 +38,6 @@ export function useScoring() {
     combo.value = 0
     missCount.value++
     lastFeedback.value = { type: 'MISS', points: 0, timestamp: Date.now() }
-  }
-
-  function decoyAvoided(level) {
-    // Small bonus for correctly NOT pressing during a decoy
-    const points = 5 * level
-    score.value += points
-    combo.value++
-    if (combo.value > maxCombo.value) maxCombo.value = combo.value
-    lastFeedback.value = { type: 'DODGE', points, timestamp: Date.now() }
-    return points
-  }
-
-  function decoyFailed() {
-    combo.value = 0
-    missCount.value++
-    lastFeedback.value = { type: 'TRAP', points: 0, timestamp: Date.now() }
   }
 
   function reset() {
@@ -80,8 +63,6 @@ export function useScoring() {
     lastFeedback,
     hitBeat,
     missBeat,
-    decoyAvoided,
-    decoyFailed,
     reset,
   }
 }

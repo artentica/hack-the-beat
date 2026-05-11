@@ -1,5 +1,5 @@
 import { computed, nextTick, onUnmounted, ref } from 'vue'
-import { LETTERS, TECH_LOGOS } from '../data/techLogos.js'
+import { LANES, LANE_KEYS, pickLevelTechs } from '../data/techLogos.js'
 import { useLevelGenerator } from './useLevelGenerator.js'
 import { useScoring } from './useScoring.js'
 
@@ -21,7 +21,7 @@ export function useGameEngine() {
   const level = ref(1)
   const countdownValue = ref(3)
 
-  // Rock Meter (0-100, démarre à 50, game over à 0)
+  // Rock Meter (0-100, starts at 50, game over at 0)
   const ROCK_METER_START = 50
   const rockMeter = ref(ROCK_METER_START)
 
@@ -29,26 +29,29 @@ export function useGameEngine() {
     rockMeter.value = Math.max(0, Math.min(100, rockMeter.value + delta))
     if (rockMeter.value === 0) {
       gameOver()
-      return true // game ended
+      return true
     }
     return false
   }
 
-  // Grid: 8 tiles for 2x4
-  const gridTiles = ref([]) // [{ letter, name, svg, index }]
+  // Grid: 4 tiles (one per lane) with decorative tech logos
+  const gridTiles = ref([]) // [{ key, laneIndex, color, shape, tech: { name, svg } }]
 
-  // Beat sequence for current level (sequential L→R scan)
+  // Beat sequence for current level
   const sequence = ref([])
   const currentBeatIndex = ref(0)
 
+  // The raw 8-beat pattern (for preview display)
+  const pattern = ref([])
+
   // Timing
-  const bpm = ref(80)
+  const bpm = ref(100)
   const beatDurationMs = computed(() => 60000 / bpm.value)
 
-  // Scan position: which grid tile (0-7) the cursor is currently on
+  // Active lane index (-1 = none)
   const activeTileIndex = ref(-1)
 
-  // How many upcoming beats to preview (Guitar Hero style approaching notes)
+  // Upcoming beats preview
   const PREVIEW_COUNT = 3
   const upcomingBeats = computed(() => {
     const upcoming = []
@@ -56,32 +59,31 @@ export function useGameEngine() {
       const idx = currentBeatIndex.value + i
       if (idx < sequence.value.length) {
         upcoming.push({
-          tileIndex: sequence.value[idx].tileIndex,
-          distance: i, // 1 = next, 2 = after next, etc.
+          tileIndex: sequence.value[idx].laneIndex,
+          distance: i,
         })
       }
     }
     return upcoming
   })
-  const isDecoyBeat = ref(false)
-  const cesarShift = ref(0)
-  const expectedLetter = ref('') // the letter the player should press (after César shift)
+
+  const expectedLetter = ref('')
 
   // Timing indicator progress (0 to 1)
   const beatProgress = ref(0)
 
+  // Beat pulse for visual rhythm feedback
+  const beatPulse = ref(false)
+
   // Input state
-  const inputResult = ref(null) // null | 'PERFECT' | 'GOOD' | 'OK' | 'MISS' | 'DODGE' | 'TRAP'
+  const inputResult = ref(null)
   const inputProcessed = ref(false)
 
-  // Glitch effects
+  // Glitch effects (simplified — only screen shake remains)
   const glitchEffects = ref({
     screenShake: false,
-    colorInvert: false,
-    blur: false,
   })
   let shakeTimer = null
-  let colorInvertTimer = null
   const levelParams = ref(null)
 
   // Animation frame tracking
@@ -99,7 +101,6 @@ export function useGameEngine() {
 
   const totalBeats = computed(() => sequence.value.length)
   const beatsRemaining = computed(() => totalBeats.value - currentBeatIndex.value)
-  // Count only actionable beats (non-rest)
   const activeBeatsTotal = computed(() => sequence.value.filter(b => !b.isRest).length)
   const activeBeatsPlayed = computed(() => {
     let count = 0
@@ -109,8 +110,7 @@ export function useGameEngine() {
     return count
   })
 
-  // The hit window: ±150ms around the center of the beat
-  // PERFECT: ±50ms, GOOD: ±100ms, OK: ±150ms
+  // Hit windows: PERFECT ±50ms, GOOD ±100ms, OK ±150ms
   const HIT_WINDOW = 150
 
   // --- Methods ---
@@ -121,37 +121,33 @@ export function useGameEngine() {
     levelParams.value = params
     bpm.value = params.bpm
 
-    // Pick 8 random logos from the pool of 14
-    const selectedLogos = generator.pickGridLogos(TECH_LOGOS)
-    gridTiles.value = selectedLogos.map((logo, idx) => ({
-      ...logo,
+    // Build 4 grid tiles from lanes + decorative tech logos
+    const techs = pickLevelTechs(lvl)
+    gridTiles.value = LANES.map((lane, idx) => ({
+      ...lane,
+      tech: techs[idx],
       index: idx,
     }))
 
     // Generate beat sequence
-    sequence.value = generator.generateSequence(lvl, 8)
+    const result = generator.generateSequence(lvl)
+    sequence.value = result.sequence
+    pattern.value = result.pattern
     currentBeatIndex.value = 0
     activeTileIndex.value = -1
-    isDecoyBeat.value = false
-    cesarShift.value = 0
     expectedLetter.value = ''
     beatProgress.value = 0
+    beatPulse.value = false
     inputResult.value = null
     inputProcessed.value = false
     rockMeter.value = ROCK_METER_START
 
-    // Reset glitch effects
-    glitchEffects.value = {
-      screenShake: false,
-      colorInvert: false,
-      blur: false,
-    }
+    glitchEffects.value = { screenShake: false }
   }
 
   function startCountdown(onComplete) {
     state.value = STATES.COUNTDOWN
     countdownValue.value = 3
-    // Clear any lingering result from the previous level
     inputResult.value = null
     activeTileIndex.value = -1
     beatProgress.value = 0
@@ -162,7 +158,8 @@ export function useGameEngine() {
       if (countdownValue.value <= 0) {
         clearInterval(countdownTimer)
         countdownTimer = null
-        onComplete()
+        // Show "GO!" for 1s before starting — enough time to read it
+        setTimeout(() => onComplete(), 300)
       }
     }, 800)
   }
@@ -186,40 +183,20 @@ export function useGameEngine() {
     inputResult.value = null
     beatProgress.value = 0
 
-    // Rest beat — no tile activates, auto-advance after beat duration
+    // Pulse on every beat for rhythm feedback
+    beatPulse.value = false
+    nextTick(() => { beatPulse.value = true })
+
     if (beat.isRest) {
       activeTileIndex.value = -1
-      isDecoyBeat.value = false
-      cesarShift.value = 0
       expectedLetter.value = ''
-      // Don't mark inputProcessed — pressing during rest is penalized in handleKeyPress
       beatStartTime = performance.now()
       animFrameId = requestAnimationFrame(beatLoop)
       return
     }
 
-    if (beat.isDecoy) {
-      // Decoy beat: tile lights up but player should NOT press
-      activeTileIndex.value = beat.tileIndex
-      isDecoyBeat.value = true
-      cesarShift.value = 0
-      expectedLetter.value = ''
-    } else {
-      activeTileIndex.value = beat.tileIndex
-      isDecoyBeat.value = false
-      cesarShift.value = beat.cesarShift
-
-      const baseLetter = gridTiles.value[beat.tileIndex].letter
-      if (beat.cesarShift > 0) {
-        // Shift the letter in the LETTERS array
-        const allLetters = LETTERS
-        const baseIdx = allLetters.indexOf(baseLetter)
-        const shiftedIdx = (baseIdx + beat.cesarShift) % allLetters.length
-        expectedLetter.value = allLetters[shiftedIdx]
-      } else {
-        expectedLetter.value = baseLetter
-      }
-    }
+    activeTileIndex.value = beat.laneIndex
+    expectedLetter.value = LANE_KEYS[beat.laneIndex]
 
     beatStartTime = performance.now()
     animFrameId = requestAnimationFrame(beatLoop)
@@ -232,32 +209,22 @@ export function useGameEngine() {
     const duration = beatDurationMs.value
     beatProgress.value = Math.min(1, elapsed / duration)
 
-    // Check if beat time has expired
     if (elapsed >= duration) {
       if (!inputProcessed.value) {
         const isRest = sequence.value[currentBeatIndex.value]?.isRest
 
         if (isRest) {
-          // Rest beat completed without pressing — correct, no action needed
-        } else if (isDecoyBeat.value) {
-          // Player correctly did NOT press anything during decoy
-          scoring.decoyAvoided(level.value)
-          inputResult.value = 'DODGE'
-          changeRockMeter(+5)
+          // Rest beat — no action needed
         } else {
           // Missed the beat
           scoring.missBeat()
           inputResult.value = 'MISS'
-          triggerGlitch('miss')
-          if (changeRockMeter(-15)) return
+          triggerGlitch()
+          if (changeRockMeter(-10)) return
         }
         inputProcessed.value = true
       }
 
-      // Rest beats advance faster (no feedback needed)
-      const isRest = sequence.value[currentBeatIndex.value]?.isRest
-
-      // Advance immediately — timeline scrolls continuously so no delay needed
       currentBeatIndex.value++
       startBeat()
       return
@@ -270,19 +237,18 @@ export function useGameEngine() {
     if (state.value !== STATES.PLAYING) return
     if (inputProcessed.value) return
 
-    const pressedLetter = key.toUpperCase()
+    const pressedKey = key.toUpperCase()
 
-    // Only consider letters that exist in the grid
-    const isInGrid = gridTiles.value.some(t => t.letter === pressedLetter)
-    if (!isInGrid) return // ignore keys not in current grid (non-letter keys, etc.)
+    // Only accept D, F, J, K
+    if (!LANE_KEYS.includes(pressedKey)) return
 
-    // Pressed during a rest beat — penalize spam
+    // Pressed during a rest beat — penalize
     const currentSeqBeat = sequence.value[currentBeatIndex.value]
     if (currentSeqBeat && currentSeqBeat.isRest) {
       scoring.missBeat()
       inputResult.value = 'MISS'
       inputProcessed.value = true
-      triggerGlitch('miss')
+      triggerGlitch()
       return
     }
 
@@ -290,19 +256,8 @@ export function useGameEngine() {
     const elapsed = now - beatStartTime
     const duration = beatDurationMs.value
 
-    if (isDecoyBeat.value) {
-      // Player pressed during a decoy — fail!
-      scoring.decoyFailed()
-      inputResult.value = 'TRAP'
-      inputProcessed.value = true
-      triggerGlitch('miss')
-      changeRockMeter(-20)
-      return
-    }
-
-    if (pressedLetter === expectedLetter.value) {
+    if (pressedKey === expectedLetter.value) {
       // Correct key — evaluate timing
-      // Timing relative to center of beat
       const centerTime = duration / 2
       const timingOffset = Math.abs(elapsed - centerTime)
 
@@ -310,7 +265,7 @@ export function useGameEngine() {
       if (timingOffset <= 50) accuracy = 'PERFECT'
       else if (timingOffset <= 100) accuracy = 'GOOD'
       else if (timingOffset <= HIT_WINDOW) accuracy = 'OK'
-      else accuracy = 'OK' // still within beat window
+      else accuracy = 'OK'
 
       scoring.hitBeat(accuracy, level.value)
       inputResult.value = accuracy
@@ -318,16 +273,16 @@ export function useGameEngine() {
       const meterGain = accuracy === 'PERFECT' ? 12 : accuracy === 'GOOD' ? 8 : 4
       changeRockMeter(+meterGain)
     } else {
-      // Wrong key
+      // Wrong lane
       scoring.missBeat()
       inputResult.value = 'MISS'
       inputProcessed.value = true
-      triggerGlitch('miss')
-      changeRockMeter(-15)
+      triggerGlitch()
+      changeRockMeter(-10)
     }
   }
 
-  function triggerGlitch(type) {
+  function triggerGlitch() {
     if (!levelParams.value) return
 
     if (levelParams.value.hasScreenShake) {
@@ -339,15 +294,6 @@ export function useGameEngine() {
           glitchEffects.value.screenShake = false
         }, 300)
       })
-    }
-
-    // Random chance of color invert at high levels
-    if (levelParams.value.hasColorInvert && Math.random() < 0.2) {
-      clearTimeout(colorInvertTimer)
-      glitchEffects.value.colorInvert = true
-      colorInvertTimer = setTimeout(() => {
-        glitchEffects.value.colorInvert = false
-      }, 3000)
     }
   }
 
@@ -384,7 +330,6 @@ export function useGameEngine() {
     scoring.reset()
   }
 
-  // Cleanup on unmount
   onUnmounted(() => {
     cancelAnimationFrame(animFrameId)
     if (countdownTimer) clearInterval(countdownTimer)
@@ -397,13 +342,13 @@ export function useGameEngine() {
     countdownValue,
     gridTiles,
     sequence,
+    pattern,
     currentBeatIndex,
     activeTileIndex,
     upcomingBeats,
-    isDecoyBeat,
-    cesarShift,
     expectedLetter,
     beatProgress,
+    beatPulse,
     inputResult,
     inputProcessed,
     glitchEffects,

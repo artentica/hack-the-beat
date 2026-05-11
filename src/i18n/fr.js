@@ -2,9 +2,9 @@ export default {
   // Start screen
   gameTitle: 'Panic at the Deploy',
   gameSubtitle: 'Testez vos réflexes de développeur !',
-  ruleType: 'Une tuile s\'illumine → tapez la <strong>lettre</strong> correspondante au clavier',
+  ruleType: 'Les notes défilent → pressez <strong>D F J K</strong> au bon moment',
   ruleSpeed: 'Le rythme accélère à chaque niveau. Restez concentré !',
-  ruleCombo: 'Plus vous enchaînez sans erreur, plus le <strong>combo</strong> multiplie vos points',
+  ruleCombo: 'Enchaînez sans erreur pour multiplier vos points avec le <strong>combo</strong>',
   startGame: 'Démarrer le jeu',
   viewScores: 'Voir les scores',
 
@@ -18,11 +18,7 @@ export default {
   feedbackGood: 'GOOD !',
   feedbackOk: 'OK',
   feedbackMiss: 'RATÉ',
-  feedbackDodge: 'ESQUIVÉ !',
-  feedbackTrap: 'PIÈGE !',
-
   // Game screen
-  cesarBanner: 'CÉSAR +{shift} — Décalez la lettre !',
 
   // Level complete
   levelComplete: 'Niveau {level} terminé !',
@@ -62,8 +58,7 @@ export default {
 
   // App
   rulesTitle: 'Règles du Jeu',
-  rulesTrap: 'Attention aux <strong>pièges</strong> : ne tapez <strong>rien</strong> sur les tuiles rouges.',
-  rulesCesar: 'Chiffre de César : décalez la lettre demandée du nombre indiqué.',
+
   exportJson: 'Exporter JSON',
   importJson: 'Importer JSON',
   quitConfirm: 'Quitter la partie en cours ?',

@@ -1,9 +1,48 @@
 <template>
-  <div class="tile" :class="tileClasses">
-    <img :src="tile.svg" :alt="tile.name" class="tile-logo" />
-    <span class="tile-letter">{{ tile.letter }}</span>
-    <div v-if="cesarShift > 0 && isActive" class="cesar-badge">
-      +{{ cesarShift }}
+  <div class="tile" :class="tileClasses" :style="tileStyle">
+    <!-- Shape watermark background -->
+    <svg class="tile-watermark" viewBox="0 0 100 100" aria-hidden="true">
+      <circle v-if="tile.shape === 'circle'" cx="50" cy="50" r="46" />
+      <rect
+        v-else-if="tile.shape === 'square'"
+        x="6"
+        y="6"
+        width="88"
+        height="88"
+        rx="8"
+      />
+      <polygon v-else-if="tile.shape === 'triangle'" points="50,4 96,96 4,96" />
+      <polygon
+        v-else-if="tile.shape === 'diamond'"
+        points="50,4 96,50 50,96 4,50"
+      />
+    </svg>
+    <!-- Tech logo -->
+    <img
+      v-if="tile.tech?.svg"
+      :src="tile.tech.svg"
+      :alt="tile.tech?.name"
+      class="tile-logo"
+    />
+    <span class="tile-letter">{{ tile.key }}</span>
+    <!-- Hit zone markers -->
+    <div class="tile-hit-zone">
+      <div class="zone zone-ok"></div>
+      <div class="zone zone-good"></div>
+      <div class="zone zone-perfect"></div>
+      <div class="zone zone-good"></div>
+      <div class="zone zone-ok"></div>
+    </div>
+    <!-- Timing progress bar -->
+    <div class="tile-progress">
+      <div
+        class="tile-progress-fill"
+        :style="{ width: progressPercent + '%' }"
+      ></div>
+      <div
+        class="tile-progress-cursor"
+        :style="{ left: progressPercent + '%' }"
+      ></div>
     </div>
   </div>
 </template>
@@ -14,24 +53,26 @@ import { computed } from "vue";
 const props = defineProps({
   tile: { type: Object, required: true },
   isActive: { type: Boolean, default: false },
-  isDecoy: { type: Boolean, default: false },
   result: { type: String, default: null },
   progress: { type: Number, default: 0 },
-  cesarShift: { type: Number, default: 0 },
-  blur: { type: Boolean, default: false },
   upcomingDistance: { type: Number, default: 0 },
 });
 
 const tileClasses = computed(() => ({
-  active: props.isActive && !props.isDecoy,
-  decoy: props.isActive && props.isDecoy,
+  active: props.isActive,
   "result-perfect": props.result === "PERFECT",
   "result-good": props.result === "GOOD",
   "result-ok": props.result === "OK",
-  "result-miss": props.result === "MISS" || props.result === "TRAP",
-  "result-dodge": props.result === "DODGE",
-  "tile-blur": props.blur && !props.isActive,
+  "result-miss": props.result === "MISS",
 }));
+
+const tileStyle = computed(() => ({
+  "--lane-color": props.tile.color,
+  "--lane-color-glow": props.tile.color + "66",
+  "--lane-color-bg": props.tile.color + "15",
+}));
+
+const progressPercent = computed(() => Math.round(props.progress * 100));
 </script>
 
 <style lang="scss" scoped>
@@ -41,41 +82,30 @@ const tileClasses = computed(() => ({
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--tile-bg, var(--surface-color));
-  border: 2px solid var(--tile-border, transparent);
+  background: var(--lane-color-bg, var(--surface-color));
+  border: 2px solid var(--lane-color, transparent);
   border-radius: 16px;
-  padding: 12px;
+  padding: 12px 12px 20px;
   transition:
     transform 0.15s,
     border-color 0.15s,
     box-shadow 0.15s,
-    filter 0.3s,
     background 0.2s;
   aspect-ratio: 1;
   overflow: hidden;
 
-  // Active state — the current beat
   &.active {
-    border-color: var(--accent-color, #f5ed63);
-    box-shadow: 0 0 16px var(--accent-glow, rgba(245, 237, 99, 0.4));
-    transform: scale(1.05);
+    background: var(--lane-color-bg);
+    box-shadow: 0 0 20px var(--lane-color-glow);
+    transform: scale(1.08);
     z-index: 2;
+    animation: tilePulse 0.3s ease-out;
   }
 
-  // Decoy flash
-  &.decoy {
-    border-color: var(--danger-color, #ff4444);
-    box-shadow: 0 0 15px rgba(255, 68, 68, 0.4);
-    animation: decoyPulse 0.3s ease-in-out infinite;
-  }
-
-  // Result states
   &.result-perfect,
   &.result-good,
-  &.result-ok,
-  &.result-dodge {
-    border-color: var(--success-color, #4caf50);
-    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+  &.result-ok {
+    box-shadow: 0 0 18px var(--lane-color-glow);
   }
 
   &.result-miss {
@@ -83,49 +113,100 @@ const tileClasses = computed(() => ({
     box-shadow: 0 0 15px rgba(244, 67, 54, 0.5);
     animation: tileShake 0.3s ease;
   }
+}
 
-  // Blur effect at high levels
-  &.tile-blur .tile-logo {
-    filter: blur(8px);
-  }
+.tile-watermark {
+  position: absolute;
+  inset: 8%;
+  width: 84%;
+  height: 84%;
+  fill: var(--lane-color);
+  opacity: 0.08;
+  pointer-events: none;
 }
 
 .tile-logo {
-  width: 60%;
+  width: 44%;
   height: auto;
-  max-height: 60%;
+  max-height: 44%;
   object-fit: contain;
   pointer-events: none;
-  transition: filter 0.3s;
+  z-index: 1;
 }
 
 .tile-letter {
-  margin-top: 6px;
-  font-size: 1.1em;
-  font-weight: 600;
-  color: var(--main-font-color);
-  opacity: 0.7;
+  font-size: 1.2em;
+  font-weight: 800;
+  color: var(--lane-color);
+  z-index: 1;
+  margin-top: 4px;
 }
 
-.cesar-badge {
+.tile-hit-zone {
   position: absolute;
-  top: 4px;
+  bottom: 10px;
+  left: 4px;
   right: 4px;
-  background: #ff6b35;
-  color: white;
-  font-size: 0.7em;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 8px;
+  height: 6px;
+  display: flex;
+  border-radius: 3px;
+  overflow: hidden;
+  opacity: 0.4;
+
+  .zone {
+    flex: 1;
+  }
+  .zone-ok {
+    background: #1565c0;
+  }
+  .zone-good {
+    background: #2e7d32;
+  }
+  .zone-perfect {
+    background: #ffd600;
+  }
 }
 
-@keyframes decoyPulse {
-  0%,
-  100% {
-    opacity: 1;
+.tile-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tile-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--lane-color);
+  opacity: 0.3;
+  transition: width 60ms linear;
+}
+
+.tile-progress-cursor {
+  position: absolute;
+  top: -2px;
+  width: 4px;
+  height: 10px;
+  background: #fff;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: left 60ms linear;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+}
+
+@keyframes tilePulse {
+  0% {
+    transform: scale(1);
   }
   50% {
-    opacity: 0.6;
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1.08);
   }
 }
 

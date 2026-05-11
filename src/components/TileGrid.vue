@@ -5,11 +5,8 @@
       :key="tile.index"
       :tile="tile"
       :isActive="tile.index === activeTileIndex"
-      :isDecoy="tile.index === activeTileIndex && isDecoy"
       :result="tile.index === activeTileIndex ? result : null"
       :progress="tile.index === activeTileIndex ? progress : 0"
-      :cesarShift="tile.index === activeTileIndex ? cesarShift : 0"
-      :blur="blur"
       :upcomingDistance="getUpcomingDistance(tile.index)"
     />
   </div>
@@ -21,11 +18,8 @@ import Tile from "./Tile.vue";
 const props = defineProps({
   tiles: { type: Array, required: true },
   activeTileIndex: { type: Number, default: -1 },
-  isDecoy: { type: Boolean, default: false },
   result: { type: String, default: null },
   progress: { type: Number, default: 0 },
-  cesarShift: { type: Number, default: 0 },
-  blur: { type: Boolean, default: false },
   upcomingBeats: { type: Array, default: () => [] },
 });
 

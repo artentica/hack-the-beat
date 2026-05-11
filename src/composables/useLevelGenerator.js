@@ -1,119 +1,86 @@
 export function useLevelGenerator() {
-  // Fisher–Yates shuffle
-  function shuffle(arr) {
-    const a = [...arr]
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-        ;[a[i], a[j]] = [a[j], a[i]]
-    }
-    return a
-  }
-
   function pickRandom(arr) {
     return arr[Math.floor(Math.random() * arr.length)]
   }
 
-  // Pick 8 logos for the grid from a pool of 14
-  function pickGridLogos(pool) {
-    return shuffle(pool).slice(0, 8)
-  }
-
-  // Level parameters
+  // Level parameters — BPM starts at 80, caps at 180
   function getLevelParams(level) {
-    const baseBPM = 60
-    const bpm = Math.min(160, Math.round(baseBPM * Math.pow(1.08, level - 1)))
-
-    // How many times the pattern repeats
-    // Level 1: 2 reps, grows to 6
-    const loopCount = Math.min(6, 1 + Math.ceil(level / 2))
-
-    // Number of rest beats sprinkled between the 8 tiles
-    // Level 1: 6 rests, Level 4: 3, Level 7+: 0
-    const restCount = Math.max(0, 7 - level)
-
-    // Glitch features
+    const bpm = Math.min(180, 80 + level * 8)
+    const loopCount = Math.min(6, 2 + Math.ceil(level / 2))
     const hasScreenShake = level >= 5
-    const hasDecoys = level >= 7
-    const hasColorInvert = level >= 9
-    const hasBlur = level >= 11
-    const hasCesar = level >= 8
+    const activeLanes = level <= 2 ? 2 : level <= 4 ? 3 : 4
 
-    return { bpm, loopCount, restCount, hasScreenShake, hasDecoys, hasColorInvert, hasBlur, hasCesar }
+    return { bpm, loopCount, hasScreenShake, activeLanes }
   }
 
-  /**
-   * Generate a rhythm pattern: always all 8 tiles in grid order (0→7),
-   * with rest beats randomly distributed in the gaps between tiles.
-   */
-  function generatePattern(restCount) {
-    // Distribute rests among the 7 gaps between tiles
-    const gaps = new Array(7).fill(0)
-    for (let r = 0; r < restCount; r++) {
-      gaps[Math.floor(Math.random() * 7)]++
-    }
+  // Pre-defined rhythmic patterns per lane count
+  // _ = null (rest/silence). All patterns are exactly 8 beats.
+  const _ = null
+  const PATTERNS_2 = [
+    [0, _, 0, _, 1, _, 0, _],
+    [0, _, 1, _, 0, _, 1, _],
+    [0, 0, _, _, 1, 1, _, _],
+    [0, _, _, 1, _, _, 0, _],
+    [0, _, 1, _, _, 0, _, _],
+    [1, _, 0, _, 0, _, 1, _],
+  ]
 
-    const pattern = []
-    for (let i = 0; i < 8; i++) {
-      pattern.push(i)
-      // Add rests after this tile (not after the last one)
-      if (i < 7) {
-        for (let r = 0; r < gaps[i]; r++) {
-          pattern.push(null)
-        }
-      }
-    }
+  const PATTERNS_3 = [
+    [0, _, 1, _, 2, _, 1, _],
+    [0, 1, _, 2, _, 1, 0, _],
+    [0, _, 1, 2, _, _, 1, 0],
+    [2, _, 1, _, 0, _, _, 0],
+    [0, 1, _, _, 2, 1, _, _],
+    [0, _, 2, _, 1, _, 0, _],
+  ]
 
-    return pattern
+  const PATTERNS_4 = [
+    [0, 1, _, 2, 3, _, 1, _],
+    [0, _, 1, 2, _, 3, _, 0],
+    [3, _, 2, _, 1, _, 0, _],
+    [0, 1, 2, _, 3, 2, 1, _],
+    [0, _, 3, _, 1, _, 2, _],
+    [0, 1, _, 2, _, 3, 0, _],
+    [1, _, 0, 3, _, 2, _, 1],
+    [0, 2, _, _, 3, 1, _, 0],
+  ]
+
+  function getPatternPool(activeLanes) {
+    if (activeLanes <= 2) return PATTERNS_2
+    if (activeLanes <= 3) return PATTERNS_3
+    return PATTERNS_4
   }
 
-  // Generate the full beat sequence
-  function generateSequence(level, gridSize = 8) {
+  // Generate the full beat sequence for a level
+  // Returns { sequence, pattern } — pattern is the raw 8-beat array for preview
+  function generateSequence(level) {
     const params = getLevelParams(level)
-    const pattern = generatePattern(params.restCount)
+    const pool = getPatternPool(params.activeLanes)
+    const basePattern = pickRandom(pool)
     const seq = []
 
-    // Lead-in: 4 rest beats so the player can see the grid before notes arrive
+    // Lead-in: 4 rest beats so player can see notes approaching
     for (let r = 0; r < 4; r++) {
-      seq.push({ tileIndex: -1, isRest: true, isDecoy: false, cesarShift: 0 })
+      seq.push({ laneIndex: -1, isRest: true })
     }
 
+    // Repeat the same 8-beat pattern loopCount times
     for (let loop = 0; loop < params.loopCount; loop++) {
-      for (let i = 0; i < pattern.length; i++) {
-        const tileIndex = pattern[i]
-
-        if (tileIndex === null) {
-          seq.push({ tileIndex: -1, isRest: true, isDecoy: false, cesarShift: 0 })
-          continue
+      for (let i = 0; i < basePattern.length; i++) {
+        const lane = basePattern[i]
+        if (lane === null) {
+          seq.push({ laneIndex: -1, isRest: true })
+        } else {
+          seq.push({ laneIndex: lane, isRest: false })
         }
-
-        // Decoy chance at high levels
-        if (params.hasDecoys && Math.random() < 0.08) {
-          seq.push({ tileIndex, isRest: false, isDecoy: true, cesarShift: 0 })
-          continue
-        }
-
-        // César shift
-        let cesarShift = 0
-        if (params.hasCesar && Math.random() < 0.12) {
-          cesarShift = 1
-        }
-
-        seq.push({ tileIndex, isRest: false, isDecoy: false, cesarShift })
       }
     }
 
-    // Trim trailing rest beats to avoid dead time at end of level
-    while (seq.length > 0 && seq[seq.length - 1].isRest) {
-      seq.pop()
-    }
-
-    return seq
+    return { sequence: seq, pattern: basePattern }
   }
 
   return {
-    shuffle,
     pickRandom,
-    pickGridLogos,
     getLevelParams,
     generateSequence,
   }

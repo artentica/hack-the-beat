@@ -3,10 +3,9 @@
     class="game-screen"
     :class="{
       'screen-shake': glitchEffects?.screenShake,
-      'color-invert': glitchEffects?.colorInvert,
     }"
   >
-    <!-- Countdown : toujours dans le DOM, visible via classe is-active (évite le freeze GPU) -->
+    <!-- Countdown -->
     <div
       class="countdown-overlay"
       :class="{ 'is-active': state === 'COUNTDOWN' }"
@@ -37,22 +36,21 @@
         :hitResult="inputResult"
         :isCountdown="state === 'COUNTDOWN'"
         :countdownValue="countdownValue"
+        :beatPulse="beatPulse"
       />
-
-      <div v-if="cesarShift > 0 && !isDecoyBeat" class="cesar-banner">
-        {{ t("cesarBanner", { shift: cesarShift }) }}
-      </div>
 
       <div class="grid-wrapper">
         <TileGrid
           :tiles="gridTiles"
           :activeTileIndex="activeTileIndex"
-          :isDecoy="isDecoyBeat"
           :result="inputResult"
           :progress="beatProgress"
-          :cesarShift="cesarShift"
-          :blur="glitchEffects.blur"
           :upcomingBeats="upcomingBeats"
+        />
+        <SequencePreview
+          :pattern="pattern"
+          :gridTiles="gridTiles"
+          :currentBeatIndex="currentBeatIndex"
         />
         <TransitionGroup name="miss-float">
           <div
@@ -85,10 +83,11 @@
         <span><X :size="14" :stroke-width="2" /> Miss: {{ missCount }}</span>
       </div>
       <div class="level-actions">
-        <button @click="$emit('nextLevel')" class="button cbtw-style">
+        <button @click="emit('nextLevel')" class="button cbtw-style">
           <SkipForward :size="16" :stroke-width="2" /> {{ t("nextLevel") }}
+          <kbd class="kbd-hint">SPACE</kbd>
         </button>
-        <button @click="$emit('endGame')" class="button secondary">
+        <button @click="emit('endGame')" class="button secondary">
           <Square :size="16" :stroke-width="2" /> {{ t("endGameBtn") }}
         </button>
       </div>
@@ -100,18 +99,19 @@
 
 <script setup>
 import {
-  Check,
-  SkipForward,
-  Square,
-  Target,
-  ThumbsUp,
-  X,
+    Check,
+    SkipForward,
+    Square,
+    Target,
+    ThumbsUp,
+    X,
 } from "lucide-vue-next";
-import { ref, watch } from "vue";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 import { useI18n } from "../i18n/index.js";
 import GlitchOverlay from "./GlitchOverlay.vue";
 import NoteTimeline from "./NoteTimeline.vue";
 import ScoreDisplay from "./ScoreDisplay.vue";
+import SequencePreview from "./SequencePreview.vue";
 import TileGrid from "./TileGrid.vue";
 
 const { t } = useI18n();
@@ -123,21 +123,19 @@ const props = defineProps({
   combo: Number,
   comboMultiplier: Number,
   level: Number,
-  totalBeats: Number,
-  beatsRemaining: Number,
   activeBeatsTotal: { type: Number, default: 0 },
   activeBeatsPlayed: { type: Number, default: 0 },
   lastFeedback: Object,
   sequence: { type: Array, default: () => [] },
+  pattern: { type: Array, default: () => [] },
   currentBeatIndex: { type: Number, default: 0 },
   gridTiles: Array,
   activeTileIndex: Number,
   upcomingBeats: { type: Array, default: () => [] },
-  isDecoyBeat: Boolean,
   inputResult: String,
   beatProgress: Number,
-  beatDurationMs: { type: Number, default: 750 },
-  cesarShift: Number,
+  beatDurationMs: { type: Number, default: 600 },
+  beatPulse: { type: Boolean, default: false },
   glitchEffects: Object,
   perfectCount: Number,
   goodCount: Number,
@@ -146,25 +144,34 @@ const props = defineProps({
   rockMeter: { type: Number, default: 50 },
 });
 
-defineEmits(["nextLevel", "endGame"]);
+const emit = defineEmits(["nextLevel", "endGame"]);
 
-// --- Floating MISS / TRAP indicators on the grid ---
+// Spacebar to go to next level
+function onKeyDown(e) {
+  if (e.code === 'Space' && props.state === 'LEVEL_COMPLETE') {
+    e.preventDefault();
+    emit('nextLevel');
+  }
+}
+onMounted(() => window.addEventListener('keydown', onKeyDown));
+onUnmounted(() => window.removeEventListener('keydown', onKeyDown));
+
+// --- Floating MISS indicators ---
 const missFloats = ref([]);
 let missIdCounter = 0;
 
 watch(
   () => props.inputResult,
   (val) => {
-    if (val === "MISS" || val === "TRAP") {
+    if (val === "MISS") {
       const id = ++missIdCounter;
-      // Random position across the grid area
-      const x = 10 + Math.random() * 80; // 10-90%
-      const y = 10 + Math.random() * 70; // 10-80%
-      const rotation = -20 + Math.random() * 40; // -20 to +20 deg
+      const x = 10 + Math.random() * 80;
+      const y = 10 + Math.random() * 70;
+      const rotation = -20 + Math.random() * 40;
       const scale = 0.85 + Math.random() * 0.35;
       missFloats.value.push({
         id,
-        text: val === "TRAP" ? "TRAP!" : "MISS",
+        text: "MISS",
         style: {
           left: x + "%",
           top: y + "%",
@@ -191,10 +198,6 @@ watch(
 
   &.screen-shake {
     animation: gameShake 0.3s ease;
-  }
-
-  &.color-invert {
-    filter: invert(0.88) hue-rotate(180deg);
   }
 }
 
@@ -255,27 +258,6 @@ watch(
   }
 }
 
-/* César banner */
-.cesar-banner {
-  background: var(--warning-color, #ff6b35);
-  color: white;
-  font-weight: 600;
-  font-size: 0.9em;
-  padding: 6px 16px;
-  border-radius: 20px;
-  margin-bottom: 12px;
-  animation: cesarFlash 0.5s ease infinite alternate;
-}
-
-@keyframes cesarFlash {
-  from {
-    opacity: 0.8;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 /* Level complete */
 .level-complete {
   text-align: center;
@@ -307,6 +289,20 @@ watch(
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.kbd-hint {
+  display: inline-block;
+  font-size: 0.65em;
+  font-weight: 700;
+  padding: 2px 6px;
+  margin-left: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  vertical-align: middle;
+  line-height: 1.3;
+  font-family: inherit;
 }
 
 /* Grid wrapper for floating MISS indicators */

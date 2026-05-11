@@ -52,21 +52,19 @@
           :combo="engine.combo.value"
           :comboMultiplier="engine.comboMultiplier.value"
           :level="engine.level.value"
-          :totalBeats="engine.totalBeats.value"
-          :beatsRemaining="engine.beatsRemaining.value"
           :activeBeatsTotal="engine.activeBeatsTotal.value"
           :activeBeatsPlayed="engine.activeBeatsPlayed.value"
           :lastFeedback="engine.lastFeedback.value"
           :sequence="engine.sequence.value"
+          :pattern="engine.pattern.value"
           :currentBeatIndex="engine.currentBeatIndex.value"
           :gridTiles="engine.gridTiles.value"
           :activeTileIndex="engine.activeTileIndex.value"
           :upcomingBeats="engine.upcomingBeats.value"
-          :isDecoyBeat="engine.isDecoyBeat.value"
           :inputResult="engine.inputResult.value"
           :beatProgress="engine.beatProgress.value"
           :beatDurationMs="engine.beatDurationMs.value"
-          :cesarShift="engine.cesarShift.value"
+          :beatPulse="engine.beatPulse.value"
           :glitchEffects="engine.glitchEffects.value"
           :perfectCount="engine.perfectCount.value"
           :goodCount="engine.goodCount.value"
@@ -193,9 +191,6 @@ function goLeaderboard() {
 const activeRule = computed(() => {
   if (screen.value !== "game") return 0;
   const lvl = engine.level.value;
-  const params = engine.levelParams?.value;
-  if (params?.hasCesar) return 5;
-  if (params?.hasDecoys) return 4;
   if (lvl >= 5) return 3;
   if (lvl >= 3) return 2;
   return 1;

@@ -43,13 +43,7 @@ const props = defineProps({
   podium: { type: Array, default: () => [] },
 });
 
-const rules = computed(() => [
-  t("ruleType"),
-  t("ruleSpeed"),
-  t("ruleCombo"),
-  t("rulesTrap"),
-  t("rulesCesar"),
-]);
+const rules = computed(() => [t("ruleType"), t("ruleSpeed"), t("ruleCombo")]);
 </script>
 
 <style lang="scss" scoped>
