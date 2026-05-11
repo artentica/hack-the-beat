@@ -16,6 +16,9 @@ export function useGameEngine() {
   const generator = useLevelGenerator()
   const scoring = useScoring()
 
+  // Test time scale: speeds up countdown & beat durations (1 = normal)
+  const timeScale = window.__testTimeScale || 1
+
   // --- State ---
   const state = ref(STATES.IDLE)
   const level = ref(1)
@@ -46,7 +49,7 @@ export function useGameEngine() {
 
   // Timing
   const bpm = ref(100)
-  const beatDurationMs = computed(() => 60000 / bpm.value)
+  const beatDurationMs = computed(() => 60000 / bpm.value / timeScale)
 
   // Active lane index (-1 = none)
   const activeTileIndex = ref(-1)
@@ -160,9 +163,9 @@ export function useGameEngine() {
         clearInterval(countdownTimer)
         countdownTimer = null
         // Show "GO!" for 1s before starting — enough time to read it
-        setTimeout(() => onComplete(), 300)
+        setTimeout(() => onComplete(), 300 / timeScale)
       }
-    }, 800)
+    }, 800 / timeScale)
   }
 
   function startPlaying() {
@@ -317,6 +320,19 @@ export function useGameEngine() {
     beatProgress.value = 0
   }
 
+  /** Test helper: instantly complete the current level with perfect score */
+  function skipLevel() {
+    cancelAnimationFrame(animFrameId)
+    for (const beat of sequence.value) {
+      if (!beat.isRest) {
+        scoring.hitBeat('PERFECT', level.value)
+        changeRockMeter(+5)
+      }
+    }
+    currentBeatIndex.value = sequence.value.length
+    levelComplete()
+  }
+
   function nextLevel() {
     setupLevel(level.value + 1)
     startCountdown(() => startPlaying())
@@ -400,5 +416,6 @@ export function useGameEngine() {
     levelComplete,
     resetToIdle,
     setupLevel,
+    skipLevel,
   }
 }

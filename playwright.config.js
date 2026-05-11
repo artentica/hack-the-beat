@@ -3,12 +3,14 @@ import { defineConfig } from '@playwright/test'
 export default defineConfig({
   testDir: './tests',
   timeout: 60000,
+  fullyParallel: true,
+  workers: 4,
   use: {
     baseURL: 'http://localhost:4173',
     headless: true,
   },
   webServer: {
-    command: 'npm run preview -- --port 4173',
+    command: 'npm run dev -- --port 4173',
     port: 4173,
     reuseExistingServer: true,
   },
