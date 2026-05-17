@@ -6,7 +6,7 @@ Jeu de rythme/réflexe façon Guitar Hero pour développeurs. Appuie sur la bonn
 
 ## Gameplay
 
-- **8 tuiles** tirées aléatoirement parmi 14 technos (Angular, Bootstrap, C++, Docker, GitHub, HTML5, Java, Kotlin, Node.js, Python, React, Swift, TypeScript, Vue.js)
+- **8 tuiles** tirées aléatoirement parmi les principales technos de CBTW
 - **Niveaux progressifs** : le BPM augmente à chaque palier
 - **Précision** : PERFECT (±50 ms), GOOD (±100 ms), OK (±150 ms), MISS
 - **Combo** : enchaîne les hits parfaits pour multiplier ton score
