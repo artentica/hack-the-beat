@@ -15,7 +15,7 @@ import kotlinSvg from '../assets/logos/kotlin.svg'
 import mongodbSvg from '../assets/logos/mongodb.svg'
 import mysqlSvg from '../assets/logos/mysql.svg'
 import nodejsSvg from '../assets/logos/nodejs.svg'
-import playwriteSvg from '../assets/logos/playwrite.svg'
+import playwrightSvg from '../assets/logos/playwright.svg'
 import pythonSvg from '../assets/logos/python.svg'
 import reactSvg from '../assets/logos/react.svg'
 import seleniumSvg from '../assets/logos/selenium.svg'
@@ -42,7 +42,7 @@ export const TECH_POOL = [
   { name: 'MongoDB', svg: mongodbSvg },
   { name: 'MySQL', svg: mysqlSvg },
   { name: 'Node.js', svg: nodejsSvg },
-  { name: 'Playwrite', svg: playwriteSvg },
+  { name: 'Playwright', svg: playwrightSvg },
   { name: 'Python', svg: pythonSvg },
   { name: 'React', svg: reactSvg },
   { name: 'Selenium', svg: seleniumSvg },

@@ -48,11 +48,6 @@
           :progress="beatProgress"
           :upcomingBeats="upcomingBeats"
         />
-        <SequencePreview
-          :pattern="pattern"
-          :gridTiles="gridTiles"
-          :currentBeatIndex="currentBeatIndex"
-        />
         <TransitionGroup name="miss-float">
           <div
             v-for="m in missFloats"
@@ -112,7 +107,6 @@ import { useI18n } from "../i18n/index.js";
 import GlitchOverlay from "./GlitchOverlay.vue";
 import NoteTimeline from "./NoteTimeline.vue";
 import ScoreDisplay from "./ScoreDisplay.vue";
-import SequencePreview from "./SequencePreview.vue";
 import TileGrid from "./TileGrid.vue";
 
 const { t } = useI18n();
