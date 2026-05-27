@@ -307,6 +307,16 @@ body {
       background-color: var(--accent-hover);
     }
   }
+
+  &.primary {
+    background-color: var(--color-cbtw-blue);
+    color: var(--color-cbtw-white);
+    
+    &:hover {
+      background-color: var(--color-cbtw-blue);
+      color: var(--color-cbtw-white);
+    }
+  } 
 }
 
 .main-layout {

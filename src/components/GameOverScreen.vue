@@ -395,7 +395,7 @@ h3 {
 }
 
 .privacy-link:hover {
-  color: var(--accent-color);
+  color: var(--accent-hover);
 }
 
 .saved-msg {

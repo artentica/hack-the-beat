@@ -34,7 +34,7 @@ export const TECH_POOL = [
 // 4-lane system: fixed keys, colors, and shapes
 export const LANE_KEYS = ['D', 'F', 'J', 'K']
 
-export const LANE_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f']
+export const LANE_COLORS = ['#EE4823', '#3DA2D6', '#F5ED63', '#FCB912']
 
 export const LANE_SHAPES = ['circle', 'square', 'triangle', 'diamond']
 

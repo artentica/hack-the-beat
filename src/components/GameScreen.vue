@@ -48,11 +48,6 @@
           :progress="beatProgress"
           :upcomingBeats="upcomingBeats"
         />
-        <SequencePreview
-          :pattern="pattern"
-          :gridTiles="gridTiles"
-          :currentBeatIndex="currentBeatIndex"
-        />
         <TransitionGroup name="miss-float">
           <div
             v-for="m in missFloats"
@@ -84,7 +79,7 @@
         <span><X :size="14" :stroke-width="2" /> Miss: {{ missCount }}</span>
       </div>
       <div class="level-actions">
-        <button @click="emit('nextLevel')" class="button cbtw-style">
+        <button @click="emit('nextLevel')" class="button cbtw-style primary">
           <SkipForward :size="16" :stroke-width="2" /> {{ t("nextLevel") }}
           <kbd class="kbd-hint">SPACE</kbd>
         </button>
@@ -340,6 +335,7 @@ watch(
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
+  padding-top: 64px;
 }
 
 .miss-float-indicator {
