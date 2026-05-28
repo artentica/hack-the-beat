@@ -20,12 +20,16 @@
           personnelles.
         </p>
         <p>
-          Dans le cadre de ce jeu, vous serez invité(e) à fournir des données
-          personnelles dans le formulaire ci-dessous. Vos données seront
-          traitées par Collaboration Betters The World S.A/N.V, société belge
-          dont le siège social est situé au 34 rue Laffitte – 75009 PARIS
-          (ci-après « CBTW ») et ses filiales, partenaires et leurs
-          sous-traitants respectifs, conformément à la
+          Le formulaire suivant nécessite le traitement de vos données
+          personnelles. Conformément au Règlement Général sur la Protection des
+          Données (RGPD) n°2016/679 du Parlement européen, cette notice vous
+          fournit les informations nécessaires concernant le traitement de vos
+          données personnelles. Dans le cadre de ce jeu, vous serez invité(e) à
+          fournir des données personnelles dans le formulaire ci-dessous. Vos
+          données seront traitées par Collaboration Betters The World S.A/N.V,
+          société belge dont le siège social est situé Chaussée de Charleroi,
+          112 in 1060 Brussels (ci-après « CBTW ») et ses filiales, partenaires
+          et leurs sous-traitants respectifs, conformément à la
           <a
             href="https://cbtw.tech/privacy-policy"
             target="_blank"
@@ -36,7 +40,7 @@
           votre consentement à ce traitement, aux fins de vous contacter à
           l'avenir par SMS, téléphone ou e-mail, et pour établir des
           statistiques agrégées sur les participants et leurs réponses. Vos
-          données personnelles seront supprimées au plus tard le 13 juin 2026.
+          données personnelles seront supprimées au plus tard le 12 juin 2027.
           Conformément à la Politique de Confidentialité de CBTW, vous pouvez
           exercer vos droits au titre du RGPD, y compris le retrait de votre
           consentement, en adressant une demande à
@@ -63,9 +67,9 @@
           For the purpose of this game, you will be required to provide personal
           data in the form below. Your data will be processed by Collaboration
           Betters The World S.A/N.V, a Belgian company having its registered
-          offices at 34 rue Laffitte – 75009 PARIS (hereunder referred as
-          "CBTW") and its affiliates, partners and their respective contractors
-          in accordance with the provisions of CBTW
+          offices at Chaussée de Charleroi, 112 in 1060 Brussels (hereunder
+          referred as "CBTW") and its affiliates, partners and their respective
+          contractors in accordance with the provisions of CBTW
           <a
             href="https://cbtw.tech/privacy-policy"
             target="_blank"
@@ -76,7 +80,7 @@
           your consent to such processing for the purposes of contacting you in
           the future via SMS, phone or email, and for establishing aggregate
           statistics about the participants and their answers. Your personal
-          data will be deleted no later than 13 June 2026. As valued in CBTW
+          data will be deleted no later than 12 June 2027. As valued in CBTW
           Privacy Policy you can exercise your rights under GDPR, including the
           withdraw of your consent, by addressing a request at
           <a href="mailto:privacypolicy@cbtw.tech">privacypolicy@cbtw.tech</a>.
