@@ -103,7 +103,7 @@ const feedbackText = computed(() => {
   max-width: 520px;
   margin: 0 auto 16px;
   position: relative;
-  padding-bottom: 36px; // reserve space for feedback
+  padding-bottom: 64px; // reserve space for feedback
 }
 
 .score-row {

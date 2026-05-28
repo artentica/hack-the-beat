@@ -19,7 +19,7 @@
     </div>
 
     <div class="start-buttons">
-      <button @click="$emit('start')" class="button cbtw-style">
+      <button @click="$emit('start')" class="button cbtw-style primary">
         <Play :size="16" :stroke-width="2.5" /> {{ t("startGame") }}
       </button>
       <button @click="$emit('viewScores')" class="button secondary">
