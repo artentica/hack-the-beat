@@ -76,7 +76,7 @@ test.describe('Game Phases', () => {
   test('Start screen renders with start button', async ({ page }) => {
     const title = page.locator('.game-title')
     await expect(title).toBeVisible()
-    await expect(title).toHaveText('Panic at the Deploy')
+    await expect(title).toHaveText('Hack the Beat')
 
     const startBtn = page.locator('button.cbtw-style').first()
     await expect(startBtn).toBeVisible()
@@ -244,7 +244,7 @@ test.describe('Language switching', () => {
 
     // Default should show game title
     const title = page.locator('.game-title')
-    await expect(title).toHaveText('Panic at the Deploy')
+    await expect(title).toHaveText('Hack the Beat')
 
     // Open settings
     await page.locator('.settings-icon').click()
@@ -300,7 +300,7 @@ test.describe('Score persistence', () => {
   }
 
   const aliceBetter = { ...alice, score: 2500, date: '2026-01-02' }
-  const aliceWorse  = { ...alice, score: 800,  date: '2026-01-03' }
+  const aliceWorse = { ...alice, score: 800, date: '2026-01-03' }
 
   const bob = {
     firstName: 'Bob',

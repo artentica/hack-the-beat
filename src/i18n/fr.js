@@ -1,6 +1,6 @@
 export default {
   // Start screen
-  gameTitle: 'Panic at the Deploy',
+  gameTitle: 'Hack the Beat',
   gameSubtitle: 'Testez vos réflexes de développeur !',
   ruleType: 'Les notes défilent → pressez <strong>D F J K</strong> au bon moment',
   ruleSpeed: 'Le rythme accélère à chaque niveau. Restez concentré !',

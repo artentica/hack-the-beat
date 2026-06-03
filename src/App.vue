@@ -132,13 +132,22 @@ if (typeof window !== "undefined") {
   window.podium = () => {
     const top3 = leaderboard.sorted.value.slice(0, 3);
     if (top3.length === 0) {
-      console.log("%c🏆 Aucun score enregistré pour l'instant.", "font-size:14px;color:#aaa;");
+      console.log(
+        "%c🏆 Aucun score enregistré pour l'instant.",
+        "font-size:14px;color:#aaa;",
+      );
       return;
     }
     const medals = ["🥇", "🥈", "🥉"];
-    console.group("%c🏆 TOP 3 — Panic at the Deploy", "font-size:16px;font-weight:bold;color:#FCB912;");
+    console.group(
+      "%c🏆 TOP 3 — Hack the Beat",
+      "font-size:16px;font-weight:bold;color:#FCB912;",
+    );
     top3.forEach((entry, i) => {
-      console.group(`%c${medals[i]} #${i + 1} — ${entry.firstName} ${entry.lastName}`, "font-size:14px;font-weight:bold;");
+      console.group(
+        `%c${medals[i]} #${i + 1} — ${entry.firstName} ${entry.lastName}`,
+        "font-size:14px;font-weight:bold;",
+      );
       console.log(`📧 Email     : ${entry.email}`);
       console.log(`📞 Téléphone : ${entry.phone}`);
       console.log(`💼 Poste     : ${entry.position || "—"}`);
@@ -340,12 +349,12 @@ body {
   &.primary {
     background-color: var(--color-cbtw-blue);
     color: var(--color-cbtw-white);
-    
+
     &:hover {
       background-color: var(--color-cbtw-blue);
       color: var(--color-cbtw-white);
     }
-  } 
+  }
 }
 
 .main-layout {
