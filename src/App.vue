@@ -126,6 +126,7 @@ const { t, locale, setLocale } = useI18n();
 // Expose engine for E2E tests
 if (typeof window !== "undefined") {
   window.__engine = engine;
+  window.__leaderboard = leaderboard;
 }
 const showSettings = ref(false);
 const showPrivacy = ref(false);
@@ -296,6 +297,12 @@ body {
     background-color: var(--surface-hover);
     border-color: var(--accent-color);
     transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    filter: grayscale(40%);
   }
 
   &.accent {

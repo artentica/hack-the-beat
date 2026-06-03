@@ -131,11 +131,27 @@ const feedbackText = computed(() => {
   font-size: 1.6em;
   font-weight: 700;
   color: var(--main-font-color);
+
+  &.combo.combo-high {
+    color: var(--accent-color);
+    text-shadow:
+      -2px -2px 0 #000,
+       2px -2px 0 #000,
+      -2px  2px 0 #000,
+       2px  2px 0 #000,
+      0 0 10px var(--accent-glow);
+    animation: comboPop 0.2s ease;
+  }
 }
 
 .combo.combo-high {
   color: var(--accent-color);
-  text-shadow: 0 0 8px var(--accent-glow);
+  text-shadow:
+    -2px -2px 0 #000,
+     2px -2px 0 #000,
+    -2px  2px 0 #000,
+     2px  2px 0 #000,
+    0 0 10px var(--accent-glow);
   animation: comboPop 0.2s ease;
 }
 

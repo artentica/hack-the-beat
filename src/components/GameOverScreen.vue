@@ -206,17 +206,13 @@ function validate(field) {
 }
 
 const canSubmit = computed(() => {
-  return (
-    form.firstName.trim() !== "" &&
-    form.lastName.trim() !== "" &&
-    form.email.trim() !== "" &&
-    form.phone.trim() !== "" &&
-    form.consent &&
-    !errors.firstName &&
-    !errors.lastName &&
-    !errors.email &&
-    !errors.phone
-  );
+  if (form.firstName.trim() === "") return false;
+  if (form.lastName.trim() === "") return false;
+  if (!EMAIL_RE.test(form.email.trim())) return false;
+  const cleaned = form.phone.replace(/[\s()-]/g, "");
+  if (!PHONE_RE.test(cleaned)) return false;
+  if (!form.consent) return false;
+  return true;
 });
 
 function submit() {

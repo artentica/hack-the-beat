@@ -1,5 +1,5 @@
 import { computed, nextTick, onUnmounted, ref } from 'vue'
-import { LANES, LANE_KEYS, pickLevelTechs } from '../data/techLogos.js'
+import { LANES, LANE_KEYS, pickLevelTechs, buildSessionPool } from '../data/techLogos.js'
 import { useLevelGenerator } from './useLevelGenerator.js'
 import { useScoring } from './useScoring.js'
 
@@ -39,6 +39,8 @@ export function useGameEngine() {
 
   // Grid: 4 tiles (one per lane) with decorative tech logos
   const gridTiles = ref([]) // [{ key, laneIndex, color, shape, tech: { name, svg } }]
+  // Session pool: built once per game, ensures locked-key constraint
+  let sessionPool = null
 
   // Beat sequence for current level
   const sequence = ref([])
@@ -125,8 +127,11 @@ export function useGameEngine() {
     levelParams.value = params
     bpm.value = params.bpm
 
+    // Lazily init session pool if setupLevel is called directly (e.g. in tests)
+    if (!sessionPool) sessionPool = buildSessionPool()
+
     // Build 4 grid tiles from lanes + decorative tech logos
-    const techs = pickLevelTechs(lvl)
+    const techs = pickLevelTechs(lvl, sessionPool)
     gridTiles.value = LANES.map((lane, idx) => ({
       ...lane,
       tech: techs[idx],
@@ -347,6 +352,8 @@ export function useGameEngine() {
   function startGame() {
     scoring.reset()
     rockMeter.value = ROCK_METER_START
+    // Build a fresh session pool (enforces locked-key constraint for this session)
+    sessionPool = buildSessionPool()
     const startLevel = (import.meta.env.DEV || import.meta.env.MODE === 'test')
       ? parseInt(new URLSearchParams(window.location.search).get('level')) || 1
       : 1
