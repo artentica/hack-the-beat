@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Rename build artifact
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          cp dist/index.html "hack-the-beat-${VERSION}.html"
+          echo "ARTIFACT=hack-the-beat-${VERSION}.html" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Hack the Beat ${{ github.ref_name }}"
+          body: |
+            ## 🎮 Hack the Beat ${{ github.ref_name }}
+
+            ### Fichiers joints
+            | Fichier | Description |
+            |---|---|
+            | `hack-the-beat-${{ github.ref_name }}.html` | Jeu complet — fichier autonome, fonctionne hors ligne |
+            | `GUIDE-STAND.md` | Guide équipe stand (export, import, affichage des gagnants) |
+
+            ### Utilisation
+            Ouvrir `hack-the-beat-${{ github.ref_name }}.html` directement dans un navigateur.
+            Aucun serveur ni connexion internet requis.
+          files: |
+            ${{ env.ARTIFACT }}
+            GUIDE-STAND.md
