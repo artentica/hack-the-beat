@@ -133,7 +133,9 @@ export function useGameEngine() {
     // Build 4 grid tiles from lanes + decorative tech logos
     const techs = pickLevelTechs(lvl, sessionPool)
     gridTiles.value = LANES.map((lane, idx) => ({
-      ...lane,
+      key: lane.key,
+      laneIndex: lane.laneIndex,
+      color: techs[idx].color,
       tech: techs[idx],
       index: idx,
     }))
