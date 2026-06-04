@@ -1,22 +1,5 @@
 <template>
   <div class="tile" :class="tileClasses" :style="tileStyle">
-    <!-- Shape watermark background -->
-    <svg class="tile-watermark" viewBox="0 0 100 100" aria-hidden="true">
-      <circle v-if="tile.shape === 'circle'" cx="50" cy="50" r="46" />
-      <rect
-        v-else-if="tile.shape === 'square'"
-        x="6"
-        y="6"
-        width="88"
-        height="88"
-        rx="8"
-      />
-      <polygon v-else-if="tile.shape === 'triangle'" points="50,4 96,96 4,96" />
-      <polygon
-        v-else-if="tile.shape === 'diamond'"
-        points="50,4 96,50 50,96 4,50"
-      />
-    </svg>
     <!-- Tech logo -->
     <img
       v-if="tile.tech?.svg"
@@ -25,6 +8,7 @@
       class="tile-logo"
     />
     <span class="tile-letter">{{ tile.key }}</span>
+    <div class="tile-triangle"></div>
     <!-- Hit zone markers -->
     <div class="tile-hit-zone">
       <div class="zone zone-ok"></div>
@@ -69,7 +53,6 @@ const tileClasses = computed(() => ({
 const tileStyle = computed(() => ({
   "--lane-color": props.tile.color,
   "--lane-color-glow": props.tile.color + "66",
-  "--lane-color-bg": props.tile.color + "15",
 }));
 
 const progressPercent = computed(() => Math.round(props.progress * 100));
@@ -82,7 +65,7 @@ const progressPercent = computed(() => Math.round(props.progress * 100));
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--lane-color-bg, var(--surface-color));
+  background: var(--app-background-color);
   border: 2px solid var(--lane-color, transparent);
   border-radius: 16px;
   padding: 12px 12px 20px;
@@ -95,7 +78,6 @@ const progressPercent = computed(() => Math.round(props.progress * 100));
   overflow: hidden;
 
   &.active {
-    background: var(--lane-color-bg);
     box-shadow: 0 0 20px var(--lane-color-glow);
     transform: scale(1.08);
     z-index: 2;
@@ -118,20 +100,23 @@ const progressPercent = computed(() => Math.round(props.progress * 100));
       color: #fff;
     }
 
-    .tile-watermark {
-      fill: #fff;
-      opacity: 0.15;
+    .tile-triangle {
+      border-bottom-color: #fff;
     }
   }
 }
 
-.tile-watermark {
+.tile-triangle {
   position: absolute;
-  inset: 8%;
-  width: 84%;
-  height: 84%;
-  fill: var(--lane-color);
-  opacity: 0.08;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 12px solid var(--lane-color);
+  opacity: 0.5;
   pointer-events: none;
 }
 

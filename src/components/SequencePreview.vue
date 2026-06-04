@@ -49,13 +49,11 @@ const patternBeats = computed(() => {
     if (laneIdx === null) {
       return { isRest: true };
     }
-    const lane = LANES[laneIdx];
     const tile = props.gridTiles[laneIdx];
     return {
       isRest: false,
-      key: lane.key,
-      color: lane.color,
-      shape: lane.shape,
+      key: tile?.key || LANES[laneIdx].key,
+      color: tile?.color || LANES[laneIdx].color,
       techSvg: tile?.tech?.svg || null,
     };
   });

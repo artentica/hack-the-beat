@@ -27,45 +27,42 @@ import vuejsSvg from '../assets/logos/vuejs.svg'
 // Pool of all tech logos (used for decorative rotation per level)
 // lockedKey: if set, this logo can only appear on the lane matching that key (D/F/J/K)
 export const TECH_POOL = [
-  { name: 'Angular', svg: angularSvg },
-  { name: 'Bootstrap', svg: bootstrapSvg },
-  { name: 'C++', svg: cppSvg },
-  { name: 'Confluence', svg: confluenceSvg },
-  { name: 'Cypress', svg: cypressSvg },
-  { name: 'Docker', svg: dockerSvg, lockedKey: 'D' },
-  { name: 'Git', svg: gitSvg },
-  { name: 'GitHub', svg: githubSvg },
-  { name: 'HTML5', svg: html5Svg },
-  { name: 'Java', svg: javaSvg, lockedKey: 'J' },
-  { name: 'Jira', svg: jiraSvg, lockedKey: 'J' },
-  { name: 'Kafka', svg: kafkaSvg, lockedKey: 'K' },
-  { name: 'Kotlin', svg: kotlinSvg, lockedKey: 'K' },
-  { name: 'MongoDB', svg: mongodbSvg },
-  { name: 'MySQL', svg: mysqlSvg },
-  { name: 'Node.js', svg: nodejsSvg },
-  { name: 'Playwright', svg: playwrightSvg },
-  { name: 'Python', svg: pythonSvg },
-  { name: 'React', svg: reactSvg },
-  { name: 'Selenium', svg: seleniumSvg },
-  { name: 'Spring', svg: springSvg },
-  { name: 'Swift', svg: swiftSvg },
-  { name: 'TypeScript', svg: typescriptSvg },
-  { name: 'Vue.js', svg: vuejsSvg },
-  { name: '.NET', svg: dotnetSvg },
+  { name: 'Angular', svg: angularSvg, color: '#DD0031' },
+  { name: 'Bootstrap', svg: bootstrapSvg, color: '#7952B3' },
+  { name: 'C++', svg: cppSvg, color: '#00599C' },
+  { name: 'Confluence', svg: confluenceSvg, color: '#0052CC' },
+  { name: 'Cypress', svg: cypressSvg, color: '#4A4A4C' },
+  { name: 'Docker', svg: dockerSvg, color: '#2496ED', lockedKey: 'D' },
+  { name: 'Git', svg: gitSvg, color: '#F34F29' },
+  { name: 'GitHub', svg: githubSvg, color: '#181717' },
+  { name: 'HTML5', svg: html5Svg, color: '#E34F26' },
+  { name: 'Java', svg: javaSvg, color: '#0173BE', lockedKey: 'J' },
+  { name: 'Jira', svg: jiraSvg, color: '#136CE7', lockedKey: 'J' },
+  { name: 'Kafka', svg: kafkaSvg, color: '#231F20', lockedKey: 'K' },
+  { name: 'Kotlin', svg: kotlinSvg, color: '#7F52FF', lockedKey: 'K' },
+  { name: 'MongoDB', svg: mongodbSvg, color: '#439934' },
+  { name: 'MySQL', svg: mysqlSvg, color: '#00618A' },
+  { name: 'Node.js', svg: nodejsSvg, color: '#339933' },
+  { name: 'Playwright', svg: playwrightSvg, color: '#2D4552' },
+  { name: 'Python', svg: pythonSvg, color: '#3776AB' },
+  { name: 'React', svg: reactSvg, color: '#61DAFB' },
+  { name: 'Selenium', svg: seleniumSvg, color: '#CF0A2C' },
+  { name: 'Spring', svg: springSvg, color: '#77BC1F' },
+  { name: 'Swift', svg: swiftSvg, color: '#F05138' },
+  { name: 'TypeScript', svg: typescriptSvg, color: '#3178C6' },
+  { name: 'Vue.js', svg: vuejsSvg, color: '#4FC08D' },
+  { name: '.NET', svg: dotnetSvg, color: '#127BCA' },
 ]
 
-// 4-lane system: fixed keys, colors, and shapes
+// 4-lane system: fixed keys and default colors
 export const LANE_KEYS = ['D', 'F', 'J', 'K']
 
 export const LANE_COLORS = ['#EE4823', '#3DA2D6', '#F5ED63', '#FCB912']
-
-export const LANE_SHAPES = ['circle', 'square', 'triangle', 'diamond']
 
 export const LANES = LANE_KEYS.map((key, i) => ({
   key,
   laneIndex: i,
   color: LANE_COLORS[i],
-  shape: LANE_SHAPES[i],
 }))
 
 export function buildSessionPool() {

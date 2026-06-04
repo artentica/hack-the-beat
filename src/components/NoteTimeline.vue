@@ -41,6 +41,7 @@
           class="note-icon"
         />
         <span class="note-letter">{{ note.key }}</span>
+        <div class="note-triangle"></div>
       </div>
     </div>
   </div>
@@ -120,24 +121,21 @@ const visibleNotes = computed(() => {
     const laneIdx = beat.laneIndex;
     if (laneIdx < 0 || laneIdx >= 4) continue;
 
-    const lane = LANES[laneIdx];
     const beatOffset = i - props.currentBeatIndex;
     const posPercent = HIT_LINE_POS + (beatOffset + 0.5) * BEAT_SPACING;
 
     if (posPercent < -15 || posPercent > 115) continue;
 
-    // Get tech logo from gridTiles if available
+    // Get tech logo and color from gridTiles if available
     const tile = props.gridTiles[laneIdx];
-    const techSvg = tile?.tech?.svg || null;
 
     notes.push({
       seqIndex: i,
       posPercent,
       laneIndex: laneIdx,
-      key: lane.key,
-      color: lane.color,
-      shape: lane.shape,
-      techSvg,
+      key: tile?.key || LANES[laneIdx].key,
+      color: tile?.color || LANES[laneIdx].color,
+      techSvg: tile?.tech?.svg || null,
     });
   }
 
@@ -145,18 +143,6 @@ const visibleNotes = computed(() => {
 });
 
 function noteStyle(note) {
-  const SHAPE_CLIP = {
-    circle: "none",
-    square: "none",
-    triangle: "polygon(50% 0%, 100% 100%, 0% 100%)",
-    diamond: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-  };
-  const SHAPE_RADIUS = {
-    circle: "50%",
-    square: "14px",
-    triangle: "0",
-    diamond: "0",
-  };
   const startX = (note.posPercent / 100) * trackWidth.value - 38;
   return {
     "--start-x": startX + "px",
@@ -164,8 +150,6 @@ function noteStyle(note) {
     "--beat-dur": props.beatDurationMs + "ms",
     "--lane-color": note.color,
     "--lane-color-glow": note.color + "88",
-    "--note-radius": SHAPE_RADIUS[note.shape] || "14px",
-    clipPath: SHAPE_CLIP[note.shape] || "none",
   };
 }
 
@@ -244,8 +228,8 @@ onUnmounted(() => {
   gap: 2px;
   width: 76px;
   height: 80px;
-  border-radius: var(--note-radius, 14px);
-  background: var(--lane-color, #888);
+  border-radius: 14px;
+  background: var(--app-background-color);
   border: 3px solid var(--lane-color, #888);
   overflow: hidden;
   z-index: 2;
@@ -270,7 +254,25 @@ onUnmounted(() => {
     border-color: var(--miss-color);
     background: var(--miss-color);
     box-shadow: 0 0 14px var(--miss-color-glow);
+
+    .note-triangle {
+      border-bottom-color: #fff;
+    }
   }
+}
+
+.note-triangle {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 9px solid var(--lane-color);
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .note-icon {
@@ -284,9 +286,8 @@ onUnmounted(() => {
 .note-letter {
   font-size: 1.1em;
   font-weight: 900;
-  color: #fff;
+  color: var(--lane-color);
   line-height: 1;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes note-scroll {
